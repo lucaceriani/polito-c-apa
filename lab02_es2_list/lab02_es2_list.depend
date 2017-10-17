@@ -1,0 +1,8 @@
+# depslib dependency file v1.0
+1508263351 source:c:\users\luca\documents\c\lab02_es2_list\main.c
+	<stdio.h>
+	<stdlib.h>
+	<ctype.h>
+	<string.h>
+	<malloc.h>
+
