@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define clear_funciton "cls"
+#define clear_funciton "cls" // "clear" sui sistemi unix
 
 #define nome_f_voli "voli.txt"
 #define max_riga 30
@@ -33,21 +33,27 @@ typedef struct {
 // definizioni prototipi funzioni
 int leggiTabella(char*, volo*);
 comando leggiComando();
-void selezionaDati(volo*, int, comando);
+void selezionaDati(volo*, int, comando, char*, char*);
 
 //funzioni aggiuntive
 void maiuscola(char*);
-void input(char*,int);
 int checkData(char*);
 
 int main() {
 
 	volo voli[max_n_righe];
+	comando c;
+	const int n = (max_comando+1)+2*(len_data+1); // lunghezza massima di una riga con il comando
+	char data1[n], data2[n];
 	int dim_voli;
 
 	dim_voli=leggiTabella(nome_f_voli, voli);
 
-	for(;;) selezionaDati(voli, dim_voli, leggiComando());
+	for(;;){
+		c=leggiComando(data1, data2, n);
+        if (c==-1) continue;
+        selezionaDati(voli, dim_voli, c, data1, data2);
+	}
 
     return 0;
 }
@@ -71,9 +77,12 @@ int leggiTabella(char *nome_file, volo *voli) {
     return dim_voli;
 }
 
-comando leggiComando() {
+comando leggiComando(char *data1, char *data2, int n) {
 
     char c[max_comando];
+    char data[n];
+    int arg_c=0;
+    int i;
 
 	system(clear_funciton);
     puts("+----------------------------------------------------------------------+");
@@ -89,7 +98,22 @@ comando leggiComando() {
     puts("+-------------+----------------------+---------------------------------+");
 	puts("");
 
-	input(c, max_comando);
+	printf("> ");
+	fgets(data,n,stdin);
+
+	// initializzazione data1, data2
+    for (i=0; i<n; i++){
+		data1[i]='\0';
+		data2[i]='\0';
+    }
+
+	arg_c=sscanf(data,"%s%s%s",c,data1,data2);
+	if (arg_c<1 && arg_c>3) {
+		puts("Comando errato, riprovare!");
+		getc(stdin);
+		return -1;
+	}
+
 	maiuscola(c);
 
 	// passaggio da string a enum
@@ -98,19 +122,14 @@ comando leggiComando() {
 	else if (strcmp(c, "DESTINAZIONE")==0)	return r_destinazione;
 	else if (strcmp(c, "VETTORE")==0)		return r_vettore;
 	else if (strcmp(c, "FINE")==0)			return r_fine;
-	else 	leggiComando();
+	else 	return -1;
 }
 
 
-void selezionaDati(volo *voli, int n, comando c) {
-	char data1[len_data]; // len_data è il massimo che posso acquisire
-	char data2[len_data];
+void selezionaDati(volo *voli, int n, comando c, char *data1, char *data2) {
 	int i;
     switch (c) {
 	case r_date:
-		puts("Inserire le date nel formato YYYY/MM/DD");
-		input(data1, len_data);
-		input(data2, len_data);
         if ((checkData(data1)+checkData(data2))!=2) {
             puts("Data inserita nel formato sbagliato, riprovare");
             break;
@@ -122,24 +141,18 @@ void selezionaDati(volo *voli, int n, comando c) {
         }
 		break;
 	case r_origine:
-		puts("Inserire il codice dell'aereoporto d'origine nel formato XYZ");
-		input(data1, len_partenza);
 		maiuscola(data1);
 		for (i=0; i<n; i++) {
 			if (strcmp(data1, voli[i].partenza)==0) puts(voli[i].codiceVolo);
 		}
 		break;
 	case r_destinazione:
-		puts("Inserire il codice dell'aereoporto d'arrivo nel formato XYZ");
-		input(data1, len_partenza);
 		maiuscola(data1);
 		for (i=0; i<n; i++) {
 			if (strcmp(data1, voli[i].destinazione)==0) puts(voli[i].codiceVolo);
 		}
 		break;
 	case r_vettore:
-		puts("Inserire il codice del vettore nel formato AXYZ");
-		input(data1, len_vettore);
 		maiuscola(data1);
 		for (i=0; i<n; i++) {
 			if (strcmp(data1, voli[i].vettore)==0) puts(voli[i].codiceVolo);
@@ -149,20 +162,12 @@ void selezionaDati(volo *voli, int n, comando c) {
 		exit(0);
 	default: exit(2);
     }
-    puts("\nPremi un tasto per tornare al menu'");
-    getc(stdin);
+    puts("\nPremi invio per tornare al menu'");
     getc(stdin);
 }
 
 void maiuscola(char *s) {
 	for (;*s;++s) *s=toupper(*s);
-}
-
-// funzione che fa l'input di una stringa su data di lunghezza al max l
-void input(char *data,int l) {
-	printf("> ");
-	fgets(data, l+1, stdin);
-	sscanf(data, "%s", data);
 }
 
 int checkData(char *data) {
