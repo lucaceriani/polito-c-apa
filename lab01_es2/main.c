@@ -5,7 +5,7 @@
 #define N 20
 #define filename "testo_1.txt"
 
-#define mass(a,b) (a>b?a:b)
+#define mass(a,b) (((a)>(b))?(a):(b))
 
 int mat_search (char mat[N][N+2], int r, int c, char s[N]);
 int real_column (char*);
