@@ -13,15 +13,18 @@
 #define maxn_seq 20
 #define maxseq 5
 
+#define MAX_PAROLE 10000 //massimo di parole arbitrario
+
 int startsWhith(char*, char*); // comincia con...?
 
 int main(){
 
     char p[maxparola+1];			// parola considerata per la ricerca
     char seq[maxn_seq][maxseq];		// sequenze
+    char parole[MAX_PAROLE][maxparola+1];
     char c;
-    int n_seq=0, i=0;
-    int parole, lettera, in_parola;
+    int n_seq=0, i=0, j=0;
+    int n_parole, lettera, in_parola, passato;
 	FILE *fSeq, *fTes;
 
     fSeq=fopen(f_seq, "r");
@@ -51,56 +54,50 @@ int main(){
     	/*
 			Per stamapare i risultati come è visualizzato nell'esempio
 			o si salvano tutte le parole che cominciano con una certa sequenza
-			in un vettore, cosa che però mi riesce difficile non sapendo quante
-			parole potrei trovare, oppure si perde tempo a scansionare il file
-			n_seq volte dall'inizio con la funzione rewind. Ho scelto quest'ultima
-			soluzione per evitare errori di tipo 'segmentation fault'.
+			in un vettore o si ura rewind() e si legge il file più volte,
+			meglio optare per la prima opzione.
     	*/
 		rewind(fTes);
 
-		// inizializzazione variabili (si poteva fare nella dichiarazione ma secondo
-		// me era più chiaro inizializzare vicino al codiche che le avrebbe usate)
+		// inizializzazione variabili (si poteva fare nella dichiarazione ma
+		// è più chiaro inizializzare vicino al codice che le avrebbe usate)
 		in_parola=0;
 		lettera=0;
-		parole=0;
-
-		printf("%s\n", seq[i]);
+		n_parole=0;
 
 		while (fscanf(fTes, "%c", &c)==1) {
 
 			// se sono alla fine di una parola
 			if ((isspace(c) || ispunct(c)) && in_parola==1) {
+				p[lettera]='\0'; // termino la parola correttamente
+				strcpy(parole[n_parole], p); // salvo la parola
+			 	n_parole++;
 
-				// termino la parola correttamente
-				p[lettera]='\0';
-
-				// aumento il conteggio delle parole
-			 	parole++;
-
-				// controllo le la parola appartiene alla sequenza seq[i]
-				if (startsWhith(p, seq[i])) {
-					printf("%s %d\n", p, parole);
-				}
-
+				// reset delle variabili
 				in_parola=0;
 				lettera=0;
 
-			// se è un carattere alfanumerico
 			} else if (isalnum(c)) {
-
-				// se è il primo della parola
-				if (in_parola==0) {
-					in_parola=1;
-				}
-
-				p[lettera]=tolower(c);
+				if (in_parola==0) in_parola=1; // entro nella parola
+				p[lettera]=tolower(c); // considero solo minuscole
 				lettera++;
 			}
 		}
-		printf("\n");
     }
 
-	printf("Parole totali: %d", parole);
+
+    for (i=0; i<n_seq; i++) {
+		passato=0;
+		for (j=0; j<n_parole; j++) {
+			if (startsWhith(parole[j], seq[i])) {
+				if (!passato) printf("\n%s\n", seq[i]);
+				printf("%s %d\n", parole[j], j+1);
+				passato=1;
+			}
+		}
+    }
+
+	printf("\n\nParole totali: %d\n", n_parole);
 
     fclose(fTes);
 
