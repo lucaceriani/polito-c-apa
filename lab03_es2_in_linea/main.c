@@ -1,3 +1,12 @@
+/*
+	ATTENZIONE !
+
+	Questa versione differisce dal 'lab03_es02.c' solo per il fatto che qui l'input
+	è fatto su una riga sola (es. destinazione MPX) invece di chiedere prima
+	il comando e poi successivamente i dati in input.
+*/
+
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
