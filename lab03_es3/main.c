@@ -23,7 +23,7 @@ int main(int argc, char **argv) {
 
 	fMap=apriFile(argv[1], "r");
 
-	// controllo validità nr e nc
+	// controllo validitÃ  nr e nc
 	if (fscanf(fMap, "%d%d\n", &nr, &nc)!=2) // fondamentale lo '\n' per dopo!!
 		puts("Errore! File di mappa non formattato correttamente!"), exit(1);
 	if (nr>MAX_M)
@@ -42,11 +42,11 @@ int main(int argc, char **argv) {
     fclose(fMap);
 
 	// la ricerca dell'ingresso e dell'uscita potevo evitarla se avessi letto il file
-	//	carattere per carattere e controllato ogni volta
+	// carattere per carattere e controllato ogni volta
 	for (i=0; i<nr; i++){
-		for (j=0; j<nc; j++) {
+        for (j=0; j<nc; j++) {
             if (m[i][j]=='I')
-				ing[0]=i, ing[1]=j;
+                ing[0]=i, ing[1]=j;
 			else if (m[i][j]=='U')
             	usc[0]=i, usc[1]=j;
 		}
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
     // lettura del percorso
     fSpo=apriFile(argv[2], "r");
 
-	// per capire se il cammino è semplice sostituisco il carattere della
+	// per capire se il cammino Ã¨ semplice sostituisco il carattere della
 	// cella che sto visitando con '#'se passo sopra un '#' allora semplice=0
 	semplice=1;
 	valido=1;
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
 			// incremento o decremento a seconda del segno
 			j+=(mo/abs(mo));
 			// controllo
-			if (toupper(m[I][J+j])=='X' || I+i>nr) valido=0;
+			if (toupper(m[I][J+j])=='X' || J+j>nc) valido=0;
 			if (m[I][J+j]=='#') semplice=0;
 
 			m[I][J+j]='#';
@@ -95,12 +95,12 @@ int main(int argc, char **argv) {
 		I+=i;
     }
 
-    // se non mi sono fermato all'uscita il percorso non è valido
+    // se non mi sono fermato all'uscita il percorso non Ã¨ valido
     if (usc[0]!=I || usc[1]!=J) valido=0;
 
     printf("Il cammino%se' valido\n", valido?": - ":" non ");
 
-    // se non è valido esco
+    // se non Ã¨ valido esco
     if(!valido) return 0;
 
     printf("            - %se' semplice\n", semplice?"":"non ");

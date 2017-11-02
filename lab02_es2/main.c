@@ -40,7 +40,7 @@ int main(){
 	if (i<n_seq){
 		printf("Warning! Lette solamente %d sequenze su %d dichiarate in '%s'\n", i, n_seq, f_seq);
 		n_seq=i;
-	} // nessun caso else, se ce ne sono di più di qunto dichiarate a inizio file non le considero
+	} // nessun caso else, se ce ne sono di piÃ¹ di qunto dichiarate a inizio file non le considero
 
     fclose(fSeq);
 
@@ -49,53 +49,49 @@ int main(){
     if (fTes==NULL) printf("Errore! Impossibile aprire il file '%s'\n", f_tes), exit(1);
 
 
-    // for tra tutte le sequenze possibili
-    for (i=0; i<n_seq; i++) {
-    	/*
-			Per stamapare i risultati come è visualizzato nell'esempio
-			o si salvano tutte le parole che cominciano con una certa sequenza
-			in un vettore o si ura rewind() e si legge il file più volte,
-			meglio optare per la prima opzione.
-    	*/
-		rewind(fTes);
+    /*
+        Per stamapare i risultati com'Ã¨ visualizzato nell'esempio
+        o si salvano tutte le parole che cominciano con una certa sequenza
+        in un vettore o si ura rewind() e si legge il file piÃ¹ volte,
+        meglio optare per la prima opzione.
+    */
 
-		// inizializzazione variabili (si poteva fare nella dichiarazione ma
-		// è più chiaro inizializzare vicino al codice che le avrebbe usate)
-		in_parola=0;
-		lettera=0;
-		n_parole=0;
+    // inizializzazione variabili (si poteva fare nella dichiarazione ma
+    // Ã¨ piÃ¹ chiaro inizializzare vicino al codice che le avrebbe usate)
+    in_parola=0;
+    lettera=0;
+    n_parole=0;
 
-		while (fscanf(fTes, "%c", &c)==1) {
+    while (fscanf(fTes, "%c", &c)==1) {
 
-			// se sono alla fine di una parola
-			if ((isspace(c) || ispunct(c)) && in_parola==1) {
-				p[lettera]='\0'; // termino la parola correttamente
-				strcpy(parole[n_parole], p); // salvo la parola
-			 	n_parole++;
+        // se sono alla fine di una parola
+        if ((isspace(c) || ispunct(c)) && in_parola==1) {
+            p[lettera]='\0'; // termino la parola correttamente
+            strcpy(parole[n_parole], p); // salvo la parola
+            n_parole++;
 
-				// reset delle variabili
-				in_parola=0;
-				lettera=0;
+            // reset delle variabili
+            in_parola=0;
+            lettera=0;
 
-			} else if (isalnum(c)) {
-				if (in_parola==0) in_parola=1; // entro nella parola
-				p[lettera]=tolower(c); // considero solo minuscole
-				lettera++;
-			}
-		}
+        } else if (isalnum(c)) {
+            if (in_parola==0) in_parola=1; // entro nella parola
+            p[lettera]=tolower(c); // considero solo minuscole
+            lettera++;
+        }
     }
 
 
-    for (i=0; i<n_seq; i++) {
-		passato=0;
-		for (j=0; j<n_parole; j++) {
-			if (startsWhith(parole[j], seq[i])) {
-				if (!passato) printf("\n%s\n", seq[i]);
-				printf("%s %d\n", parole[j], j+1);
-				passato=1;
-			}
-		}
+for (i=0; i<n_seq; i++) {
+    passato=0;
+    for (j=0; j<n_parole; j++) {
+        if (startsWhith(parole[j], seq[i])) {
+            if (!passato) printf("\n%s\n", seq[i]);
+            printf("%s %d\n", parole[j], j+1);
+            passato=1;
+        }
     }
+}
 
 	printf("\n\nParole totali: %d\n", n_parole);
 
@@ -109,7 +105,7 @@ int main(){
 int startsWhith(char *a, char *b) {
     int i, n=0;
     // voglio proseguire il confronto fino all'ultima
-    // lettera della parola più corta
+    // lettera della parola piÃ¹ corta
     n=MIN(strlen(a), strlen(b));
 
     for (i=0; i<n; i++) {
