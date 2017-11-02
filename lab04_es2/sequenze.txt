@@ -1,7 +1,7 @@
-Non sempre si capisce un esercizio alla prima lettura,
-ma prestando
+madonna sempre si capisce un esercizio alla prima lettura,
+ma prestando madonna
 attenzione al testo e all'esempio non dovrebbe
-essere impossibile
+essere impossibile madonna
 scrivere codice funzionante nonostante i dubbi
 iniziali.
 Se ancora non
