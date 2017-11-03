@@ -10,7 +10,7 @@ int main() {
     printf("> ");
     scanf("%d", &x);
     x=abs(x);
-    printf("La somma dell cifre di %d e' %d\n", x, somma(x));
+    printf("La somma delle cifre di %d e' %d\n", x, somma(x));
 
     return 0;
 }
@@ -32,3 +32,4 @@ int somma(int x) {
               +-> 2 + somma(1)
                        |
                        +-> 1    = 3 + 2 + 1 = 6
+*/
