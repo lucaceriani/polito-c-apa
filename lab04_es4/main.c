@@ -21,3 +21,14 @@ int somma(int x) {
     }
     return (x%10)+somma(x/10);
 }
+/* esemplificazione soluzione:
+
+    x=123;
+
+    somma(123)
+     |
+     +-> 3 + somma(12)
+              |
+              +-> 2 + somma(1)
+                       |
+                       +-> 1    = 3 + 2 + 1 = 6
