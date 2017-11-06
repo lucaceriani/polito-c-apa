@@ -9,7 +9,6 @@ int H(int);
 
 int main() {
     int n=0, i;
-    int *res;
     puts("Sequenza di Hofstadter fino all'elemento n.");
     printf("n = ");
     scanf("%d", &n);
@@ -19,6 +18,7 @@ int main() {
         printf("%d, ", values[i]);
 
     }
+    getc(stdin);
     return 0;
 }
 
