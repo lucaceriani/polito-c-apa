@@ -1,7 +1,0 @@
-# depslib dependency file v1.0
-1507731904 source:c:\users\luca\documents\c\lab01_es3\main.c
-	<stdio.h>
-	<stdlib.h>
-	<string.h>
-	<ctype.h>
-
