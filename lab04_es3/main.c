@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define N 1000
+#define N 10000
 
 int values[N]={0};
 
