@@ -1,0 +1,5 @@
+4
+A1234 Emma Rossi nuoto 31/10/1997 2
+A1122 Pippo Baudo giavellotto 27/09/1942 3
+A6969 Mario Goffredi Nuoto 16/04/2015 12
+A0001 Marco Baldo giavellotto 01/01/0000 33
