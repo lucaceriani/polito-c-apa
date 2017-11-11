@@ -129,7 +129,7 @@ int main() {
             printf("Stampa su file? [s/n] ");
             scanf("%s", c);
             if (tolower(c[0])=='s') {
-				printf("Inserisci il nome del file: ");
+                printf("Inserisci il nome del file: ");
 				scanf("%s", p);
 				// riuso fp
 				if ((fp=fopen(p, "w"))==NULL) {
