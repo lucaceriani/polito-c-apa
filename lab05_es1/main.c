@@ -3,7 +3,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#define F_CLEAR "cls" // "clear" per sistemi unix
+#define F_CLEAR "clear" // "clear" per sistemi unix
 
 #define NOME_FILE "atleti.txt"
 #define MAX_NOME 25
@@ -153,13 +153,15 @@ int main() {
 }
 
 int sonoOrdinati(char *a, char *b) {
-    return stricmp(a,b)<=0?1:0;
+	minuscola(a);
+	minuscola(b);
+    return strcmp(a,b)<0?1:0;
 }
 
 void stampaAnagrafica(atleta_t *atleti, int n, FILE* fp) {
     int i;
     for (i=0; i<n; i++) {
-        fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+        fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].cognomenome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
     }
 }
 
