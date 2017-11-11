@@ -39,10 +39,6 @@ typedef enum {
     data, nome, codice, categoria
 } campo_e;
 
-typedef enum {
-    lineare=1, dicotomica
-} ricerca_e;
-
 void minuscola(char*);
 void maiuscola(char*);
 void stampaAnagrafica(atleta_t*, int, FILE*);
@@ -52,7 +48,7 @@ int sonoOrdinati(char*, char*);
 int startsWith(char*, char*); // se a comincia con b;
 int ricercaDicotomica(atleta_t*, int, char*, campo_e);
 int ricercaLineare(atleta_t*, int, char*, campo_e);
-char* returnCampo(atleta_t*, int, campo_e);
+char *getCampo(atleta_t*, int, campo_e);
 int main() {
 
     FILE *fp;
@@ -93,7 +89,7 @@ int main() {
         strcpy(atleti[i].categoria, tmp.categoria);
 
         // inverto la data così posso usare strcmp
-        //reverseDate(tmp.data);
+        reverseDate(tmp.data);
 
         // campi a dimesione fissa
         strcpy(atleti[i].data, tmp.data);
@@ -193,7 +189,7 @@ int main() {
 				}
 			break;
 		case 7:
-			printf("Inserire il codice atleta : ");
+			printf("Inserire il codice atleta: ");
 			scanf("%s", c);
 			if (ordinato==codice) {
 				puts("Ricerca dicotomica...");
@@ -209,7 +205,7 @@ int main() {
 				}
 			break;
 		case 8:
-			printf("Inserire il cognome dell'atleta : ");
+			printf("Inserire il cognome dell'atleta: ");
 			scanf("%s", p);
 			if (ordinato==nome) {
 				puts("Ricerca dicotomica...");
@@ -231,7 +227,7 @@ int main() {
 			break;
             
         default:
-            puts("Comando non trovato");
+            puts("Comando non trovato.\n");
         }
         getc(stdin); // prendo il ritorno a capo della scanf
         printf("\nPremere invio per tornare al menu'... ");
@@ -256,47 +252,22 @@ void stampaAnagrafica(atleta_t *atleti, int n, FILE* fp) {
 void reverseDate(char *s) {
     int d,m,y;
     sscanf(s, "%d/%d/%d",&d,&m,&y);
+    if (d>1000) return; // esco se mi accorgo che è già salvata una data invertita
     sprintf(s, "%.4d/%.2d/%.2d",y,m,d);   
 }
 
 void insetionSort(atleta_t *atleti, int n, campo_e campo) {
     int i,j;
     atleta_t x;
-    char *a, *b;
 
 	for (i=1; i<n; i++) {
         x = atleti[i];
         j=i-1;
 
-        switch (campo) {
-            case data:
-                a=x.data; b=atleti[j].data; break;
-            case nome:
-                a=x.cognomenome; b=atleti[j].cognomenome; break;
-            case codice:
-                a=x.codice; b=atleti[j].codice; break;
-            case categoria:
-                a=x.categoria; b=atleti[j].categoria; break;
-            default:
-                return;
-            }
-
-        while (j>=0 && sonoOrdinati(a, b)==1) {
+        while (j>=0 && sonoOrdinati(getCampo(&x,0,campo), getCampo(atleti,j,campo))==1) {
             // controllo di che campo si sta parlando
             atleti[j+1] = atleti[j];
             j--;
-            switch (campo) {
-            case data:
-                a=x.data; b=atleti[j].data; break;
-            case nome:
-                a=x.cognomenome; b=atleti[j].cognomenome; break;
-            case codice:
-                a=x.codice; b=atleti[j].codice; break;
-            case categoria:
-                a=x.categoria; b=atleti[j].categoria; break;
-            default:
-                return;
-            }
         }
         atleti[j+1] = x;
     }
@@ -372,6 +343,21 @@ int ricercaLineare(atleta_t* atleti, int n, char* s, campo_e campo) {
 		return -1;
 	}
 	return -1;
+}
+
+char* getCampo(atleta_t *atleti, int i, campo_e campo) {
+    switch (campo) {
+        case nome:
+            return atleti[i].cognomenome;
+        case codice:
+            return atleti[i].codice;
+        case data:
+            return atleti[i].data;
+        case categoria:
+            return atleti[i].categoria;
+        default:
+            return NULL;        
+    }
 }
 
 void minuscola(char *s) {for (;*s;s++) *s=tolower(*s);}
