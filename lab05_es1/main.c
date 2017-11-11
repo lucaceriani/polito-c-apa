@@ -130,18 +130,18 @@ int main() {
             scanf("%s", c);
             if (tolower(c[0])=='s') {
                 printf("Inserisci il nome del file: ");
-				scanf("%s", p);
-				// riuso fp
-				if ((fp=fopen(p, "w"))==NULL) {
-					printf("Errore! Impossibile aprire il file \"%s\"", p);
-				} else {
-					fprintf(fp, "%d\n", n);
-					stampaAnagrafica(atleti, n, fp);
-					fclose(fp);
-					printf("Scrittura sul file \"%s\" avvenuta con successo!\n", p);
-					break;
-				}
-			}
+                scanf("%s", p);
+                // riuso fp
+                if ((fp=fopen(p, "w"))==NULL) {
+                    printf("Errore! Impossibile aprire il file \"%s\"", p);
+                } else {
+                    fprintf(fp, "%d\n", n);
+                    stampaAnagrafica(atleti, n, fp);
+                    fclose(fp);
+                    printf("Scrittura sul file \"%s\" avvenuta con successo!\n", p);
+                    break;
+                }
+            }
             stampaAnagrafica(atleti, n, stdout);
             break;
         case 2:
@@ -162,73 +162,73 @@ int main() {
         case 5:
             insetionSort(atleti, n, categoria);
             ordinato=categoria;
-			// stampo le categorie una volta sola, considero un caso a parte
-			// per il primo atleta per non incorrere in problemi con il for
+            // stampo le categorie una volta sola, considero un caso a parte
+            // per il primo atleta per non incorrere in problemi con il for
             printf(" -> %s\n", atleti[0].categoria);
             printf("%s %s %s %s %d\n", atleti[0].codice, atleti[0].nome, atleti[0].cognome, atleti[0].data, atleti[0].ore);
             for (i=1; i<n; i++) {
-				if (_comp(atleti[i].categoria,atleti[i-1].categoria)!=0) {
-					printf("\n -> %s\n", atleti[i].categoria);
-				}
-				printf("%s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].data, atleti[i].ore);
+                if (_comp(atleti[i].categoria,atleti[i-1].categoria)!=0) {
+                    printf("\n -> %s\n", atleti[i].categoria);
+                }
+                printf("%s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].data, atleti[i].ore);
             }
             break;
         case 6:
-			printf("Inserire il codice atleta per modificarne il monte ore setimanale: ");
-			scanf("%s", c);
-			if (ordinato==codice) {
-				puts("Ricerca dicotomica...");
-				i=ricercaDicotomica(atleti, n, c, codice);
-			} else {
-				puts("Ricerca lineare...");
-				i=ricercaLineare(atleti, n, c, codice);
-			}
-			if (i!=-1) {
-					printf("Trovato:\n%s -> %s %s %s %s\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data);
-					printf("Monte ore attuale: %d\nNuovo monte ore: ", atleti[i].ore);
-					scanf("%d", &atleti[i].ore);
-					puts("Monte ore modificato correttamente!");
-				} else {
-					printf("Atleta con codice \"%s\" non trovato.\n", p);
-				}
-			break;
-		case 7:
-			printf("Inserire il codice atleta: ");
-			scanf("%s", c);
-			if (ordinato==codice) {
-				puts("Ricerca dicotomica...");
-				i=ricercaDicotomica(atleti, n, c, codice);
-			} else {
-				puts("Ricerca lineare...");
-				i=ricercaLineare(atleti, n, c, codice);
-			}
-			if (i!=-1) {
-					printf("%s -> %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-				} else {
-					printf("Atleta con codice \"%s\" non trovato.\n", p);
-				}
-			break;
-		case 8:
-			printf("Inserire il cognome dell'atleta: ");
-			scanf("%s", p);
-			if (ordinato==nome) {
-				puts("Ricerca dicotomica...");
-				i=ricercaDicotomica(atleti, n, p, nome);
-				if (i!=-1) {
-					printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-				} else {
-					printf("Atleta \"%s\" non trovato.\n", p);
-				}
-			} else {
-				puts("Ricerca lineare...");
-				i=ricercaLineare(atleti, n, p, nome);
-				if (i!=-1) {
-					printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-				} else {
-					printf("Atleta \"%s\" non trovato.\n", p);
-				}
-			}
-			break;
+            printf("Inserire il codice atleta per modificarne il monte ore setimanale: ");
+            scanf("%s", c);
+            if (ordinato==codice) {
+                puts("Ricerca dicotomica...");
+                i=ricercaDicotomica(atleti, n, c, codice);
+            } else {
+                puts("Ricerca lineare...");
+                i=ricercaLineare(atleti, n, c, codice);
+            }
+            if (i!=-1) {
+                    printf("Trovato:\n%s -> %s %s %s %s\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data);
+                    printf("Monte ore attuale: %d\nNuovo monte ore: ", atleti[i].ore);
+                    scanf("%d", &atleti[i].ore);
+                    puts("Monte ore modificato correttamente!");
+                } else {
+                    printf("Atleta con codice \"%s\" non trovato.\n", p);
+                }
+            break;
+        case 7:
+            printf("Inserire il codice atleta: ");
+            scanf("%s", c);
+            if (ordinato==codice) {
+                puts("Ricerca dicotomica...");
+                i=ricercaDicotomica(atleti, n, c, codice);
+            } else {
+                puts("Ricerca lineare...");
+                i=ricercaLineare(atleti, n, c, codice);
+            }
+            if (i!=-1) {
+                    printf("%s -> %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+                } else {
+                    printf("Atleta con codice \"%s\" non trovato.\n", p);
+                }
+            break;
+        case 8:
+            printf("Inserire il cognome dell'atleta: ");
+            scanf("%s", p);
+            if (ordinato==nome) {
+                puts("Ricerca dicotomica...");
+                i=ricercaDicotomica(atleti, n, p, nome);
+                if (i!=-1) {
+                    printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+                } else {
+                    printf("Atleta \"%s\" non trovato.\n", p);
+                }
+            } else {
+                puts("Ricerca lineare...");
+                i=ricercaLineare(atleti, n, p, nome);
+                if (i!=-1) {
+                    printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+                } else {
+                    printf("Atleta \"%s\" non trovato.\n", p);
+                }
+            }
+            break;
             
         default:
             puts("Comando non trovato.\n");
@@ -242,15 +242,15 @@ int main() {
 }
 
 int sonoOrdinati(char *a, char *b) {
-	int x=_comp(a,b);
+    int x=_comp(a,b);
     return x<0?1:(x==0?0:-1);
 }
 
 void stampaAnagrafica(atleta_t *atleti, int n, FILE* fp) {
-	int i;
-	for (i=0; i<n; i++) {
-		fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-	}
+    int i;
+    for (i=0; i<n; i++) {
+        fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+    }
 }
 
 void reverseDate(char *s) {
@@ -264,7 +264,7 @@ void insetionSort(atleta_t *atleti, int n, campo_e campo) {
     int i,j;
     atleta_t x;
 
-	for (i=1; i<n; i++) {
+    for (i=1; i<n; i++) {
         x = atleti[i];
         j=i-1;
 
@@ -278,16 +278,16 @@ void insetionSort(atleta_t *atleti, int n, campo_e campo) {
 }
 
 int startsWith(char *a, char *b) { 
-	// case unsensitive
+    // case unsensitive
     int i, n=0;
     // voglio proseguire il confronto fino all'ultima
     // lettera della parola più corta
     n=MIN(strlen(a), strlen(b));
 
     for (i=0; i<n; i++) {
-		if (tolower(a[i])!=tolower(b[i])) {
-			return 0;
-		}
+        if (tolower(a[i])!=tolower(b[i])) {
+            return 0;
+        }
     }
     return 1;
 }
@@ -298,49 +298,49 @@ int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
     l=0; r=n-1;
     
     if (campo==codice) {
-		while ((r-l)!=0) {
-			m=(l+r)/2;
-			if (_comp(atleti[m].codice, s)==0) {
-				return m;
-			} else if (_comp(atleti[m].codice, s)>0){ // proseguo nel sottovettore sx
-				r=m;
-			} else { // proseguo nel sottovettore dx
-				l=m+1;
-			}
-		}
-		if (_comp(atleti[l].codice, s)==0) return l;
-		return -1;
-		
-	} else if (campo==nome) {
-		while ((r-l)!=0) {
-			m=(l+r)/2;
-			if (startsWith(atleti[m].cognomenome, s)==1) {
-				return m;
-			} else if (_comp(atleti[m].cognomenome, s)>0){ // proseguo nel sottovettore sx
-				r=m;
-			} else { // proseguo nel sottovettore dx
-				l=m+1;
-			}
-		}
-		if (startsWith(atleti[l].cognomenome, s)==1) return l;
-		return -1;
-	}
+        while ((r-l)!=0) {
+            m=(l+r)/2;
+            if (_comp(atleti[m].codice, s)==0) {
+                return m;
+            } else if (_comp(atleti[m].codice, s)>0){ // proseguo nel sottovettore sx
+                r=m;
+            } else { // proseguo nel sottovettore dx
+                l=m+1;
+            }
+        }
+        if (_comp(atleti[l].codice, s)==0) return l;
+        return -1;
+        
+    } else if (campo==nome) {
+        while ((r-l)!=0) {
+            m=(l+r)/2;
+            if (startsWith(atleti[m].cognomenome, s)==1) {
+                return m;
+            } else if (_comp(atleti[m].cognomenome, s)>0){ // proseguo nel sottovettore sx
+                r=m;
+            } else { // proseguo nel sottovettore dx
+                l=m+1;
+            }
+        }
+        if (startsWith(atleti[l].cognomenome, s)==1) return l;
+        return -1;
+    }
 
     return -1;
 }
 
 int ricercaLineare(atleta_t* atleti, int n, char* s, campo_e campo) {
-	int i;
-	if (campo==codice) {
-		for (i=0; i<n; i++) {
-			if (_comp(atleti[i].codice, s)==0) return i;
-		}
-	} else if (campo==nome) {
-		for (i=0; i<n; i++) {
-			if (startsWith(atleti[i].cognomenome, s)==1) return i;
-		}
-	}
-	return -1;
+    int i;
+    if (campo==codice) {
+        for (i=0; i<n; i++) {
+            if (_comp(atleti[i].codice, s)==0) return i;
+        }
+    } else if (campo==nome) {
+        for (i=0; i<n; i++) {
+            if (startsWith(atleti[i].cognomenome, s)==1) return i;
+        }
+    }
+    return -1;
 }
 
 char* getCampo(atleta_t *atleti, int i, campo_e campo) {
