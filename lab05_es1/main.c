@@ -9,6 +9,12 @@
 #define MAX_NOME 25
 #define LUNG_CODICE 5
 #define non_strutturato ;;
+#define MAX_PERCORSO_FILE 100
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
+#define _comp(a,b) strcasecmp(a,b) // per linux
+//#define _comp(a,b) stricmp(a,b) //decommentare su windows
 
 typedef struct {
     char *nome;
@@ -38,11 +44,15 @@ typedef enum {
 } ricerca_e;
 
 void minuscola(char*);
+void maiuscola(char*);
 void stampaAnagrafica(atleta_t*, int, FILE*);
 void reverseDate(char*);
 void insetionSort(atleta_t*, int, campo_e);
 int sonoOrdinati(char*, char*);
-
+int startsWith(char*, char*); // se a comincia con b;
+int ricercaDicotomica(atleta_t*, int, char*, campo_e);
+int ricercaLineare(atleta_t*, int, char*, campo_e);
+char* returnCampo(atleta_t*, int, campo_e);
 int main() {
 
     FILE *fp;
@@ -50,12 +60,8 @@ int main() {
     atleta_temp_t tmp;
     int scelta=-1;
     int n=0, i=0;
-    int ordinato[4];
-
-    // inizializzazione del vettore a non ordinato
-    for (i=0; i<4; i++) {
-        ordinato[i]=0;
-    }
+    campo_e ordinato=-1;
+    char c[LUNG_CODICE+1], p[MAX_PERCORSO_FILE+1]; // variabili riutilizzate per l'input utente
 
     // apretura e controllo file
     if ((fp=fopen(NOME_FILE, "r"))==NULL){
@@ -110,6 +116,7 @@ int main() {
         puts("6. Aggiornamento monte ore settimanali");
         puts("7. Ricerca atleta per codice");
         puts("8. Ricerca atleta per cognome (anche parziale)");
+        puts("0. Esci");
         puts("");
         printf("> ");
         scanf("%d", &scelta);
@@ -118,29 +125,99 @@ int main() {
         case 0:
             return 0;
         case 1:
-            printf("Stampa su file? [s/N] \n");
+            printf("Stampa su file? [s/n] ");
+            scanf("%s", c);
+            if (tolower(c[0])=='s') {
+				printf("Inserisci il nome del file: ");
+				scanf("%s", p);
+				// riuso fp
+				if ((fp=fopen(p, "w"))==NULL) {
+					printf("Errore! Impossibile aprire il file \"%s\"", p);
+				} else {
+					fprintf(fp, "%d\n", n);
+					stampaAnagrafica(atleti, n, fp);
+					fclose(fp);
+					printf("Scrittura sul file \"%s\" avvenuta con successo!\n", p);
+					break;
+				}
+			}
             stampaAnagrafica(atleti, n, stdout);
             break;
         case 2:
             insetionSort(atleti, n, data);
-            ordinato[data]=1;
+            ordinato=data;
+            puts("Ordinamento per data eseguito!");
             break;
         case 3:
             insetionSort(atleti, n, codice);
-            ordinato[codice]=1;
+            ordinato=codice;
+            puts("Ordinamento per codice atleta eseguito!");
             break;
         case 4:
             insetionSort(atleti, n, nome);
-            ordinato[nome]=1;
+            ordinato=nome;
+            puts("Ordinamento per cognome eseguito!");
             break;
         case 5:
             insetionSort(atleti, n, categoria);
-            ordinato[categoria]=1;
-            for (i=0; i<n; i++) {
-                puts(atleti[i].categoria);
-
+            ordinato=categoria;
+			// stampo le categorie una volta sola, considero un caso a parte
+			// per il primo atleta per non incorrere in problemi con il for
+            printf(" -> %s\n", atleti[0].categoria);
+            printf("%s %s %s %s %d\n", atleti[0].codice, atleti[0].nome, atleti[0].cognome, atleti[0].data, atleti[0].ore);
+            for (i=1; i<n; i++) {
+				if (_comp(atleti[i].categoria,atleti[i-1].categoria)!=0) {
+					printf("\n -> %s\n", atleti[i].categoria);
+				}
+				printf("%s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].data, atleti[i].ore);
             }
             break;
+        case 6:
+			printf("Inserire il codice atleta per modificarne il monte ore setimanale: ");
+			scanf("%s", c);
+			if (ordinato==codice) {
+				i=ricercaDicotomica(atleti, n, c, codice);
+				if (i!=-1) {
+					printf("trovato! cognomenome: %s\n", atleti[i].cognomenome);
+				} else {
+					printf("Atleta non trovato\n");
+				}
+			} else {
+				puts("ricerca lineare");
+				// ricerca lineare
+			}
+			break;
+		case 7:
+			printf("Inserire il codice atleta : ");
+			scanf("%s", c);
+			if (ordinato==codice) {
+				i=ricercaDicotomica(atleti, n, c, codice);
+				if (i!=-1) {
+					printf("%s -> %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+				} else {
+					printf("Atleta non trovato\n");
+				}
+			} else {
+				puts("ricerca lineare");
+				// ricerca lineare
+			}
+			break;
+		case 8:
+			printf("Inserire il cognome dell'atleta : ");
+			scanf("%s", p);
+			if (ordinato==nome) {
+				i=ricercaDicotomica(atleti, n, c, nome);
+				if (i!=-1) {
+					printf("%s -> %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+				} else {
+					printf("Atleta non trovato\n");
+				}
+			} else {
+				puts("ricerca lineare");
+				// ricerca lineare
+			}
+			break;
+            
         default:
             puts("Comando non trovato");
         }
@@ -153,25 +230,21 @@ int main() {
 }
 
 int sonoOrdinati(char *a, char *b) {
-	minuscola(a);
-	minuscola(b);
-    return strcmp(a,b)<0?1:0;
+	int x=_comp(a,b);
+    return x<0?1:(x==0?0:-1);
 }
 
 void stampaAnagrafica(atleta_t *atleti, int n, FILE* fp) {
-    int i;
-    for (i=0; i<n; i++) {
-        fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].cognomenome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-    }
+	int i;
+	for (i=0; i<n; i++) {
+		fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+	}
 }
 
 void reverseDate(char *s) {
-    char d[11];
-    d[10]='\0';
-    d[4]='/';
-    d[7]='/';
-    sscanf(s, "%c%c/%c%c/%c%c%c%c", &d[8],&d[9], &d[5],&d[6], &d[0],&d[1],&d[2],&d[3]);
-    strcpy(s,d);
+    int d,m,y;
+    sscanf(s, "%d/%d/%d",&d,&m,&y);
+    sprintf(s, "%.4d/%.2d/%.2d",y,m,d);   
 }
 
 void insetionSort(atleta_t *atleti, int n, campo_e campo) {
@@ -198,25 +271,88 @@ void insetionSort(atleta_t *atleti, int n, campo_e campo) {
 
         while (j>=0 && sonoOrdinati(a, b)==1) {
             // controllo di che campo si sta parlando
+            atleti[j+1] = atleti[j];
+            j--;
             switch (campo) {
             case data:
-                b=atleti[j].data; break;
+                a=x.data; b=atleti[j].data; break;
             case nome:
-                b=atleti[j].cognomenome; break;
+                a=x.cognomenome; b=atleti[j].cognomenome; break;
             case codice:
-                b=atleti[j].codice; break;
+                a=x.codice; b=atleti[j].codice; break;
             case categoria:
-                b=atleti[j].categoria; break;
+                a=x.categoria; b=atleti[j].categoria; break;
             default:
                 return;
             }
-            atleti[j+1] = atleti[j];
-            j--;
         }
         atleti[j+1] = x;
     }
 }
 
-void minuscola(char *s) {
-    for (;*s;s++) *s=tolower(*s);
+int startsWith(char *a, char *b) {
+    int i, n=0;
+    // voglio proseguire il confronto fino all'ultima
+    // lettera della parola più corta
+    n=MIN(strlen(a), strlen(b));
+
+    for (i=0; i<n; i++) {
+		if (tolower(a[i])!=tolower(b[i])) {
+			return 0;
+		}
+    }
+    return 1;
 }
+
+int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
+
+    int l,r,m;
+    char *cerca;
+    l=0; r=n-1;
+    
+    while ((r-l)!=0) {
+		
+		m=(l+r)/2;
+		
+		// switch per capire cosa cercare in base al campo passato
+		switch (campo) {
+		case codice:
+			cerca=atleti[m].codice;
+			break;		
+		case nome:
+			cerca=atleti[m].cognomenome;
+			break;
+		default:
+			return -1;
+		}
+		
+		
+        if (_comp(cerca, s)==0) {
+            return m;
+        } else if (_comp(cerca, s)==1){ // proseguo nel sottovettore sx
+            r=m;
+        } else { // proseguo nel sottovettore dx
+            l=m+1;
+        }
+    }
+    
+    m=(l+r)/2;
+    
+    switch (campo) {
+		case codice:
+			cerca=atleti[m].codice;
+			break;		
+		case nome:
+			cerca=atleti[m].cognomenome;
+			break;
+		default:
+			return -1;
+	}
+       
+    if (startsWith(cerca, s)==0) return m;
+    
+    return -1;
+}
+
+void minuscola(char *s) {for (;*s;s++) *s=tolower(*s);}
+void maiuscola(char *s) {for (;*s;s++) *s=toupper(*s);}
