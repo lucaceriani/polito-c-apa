@@ -3,8 +3,6 @@
 #include <string.h>
 #include <ctype.h>
 
-#define F_CLEAR "clear" // "clear" per sistemi unix
-
 #define NOME_FILE "atleti.txt"
 #define MAX_NOME 25
 #define LUNG_CODICE 5
@@ -13,8 +11,14 @@
 
 #define MIN(a,b) (((a)<(b))?(a):(b))
 
-#define _comp(a,b) strcasecmp(a,b) // per linux
-//#define _comp(a,b) stricmp(a,b) //decommentare su windows
+#ifdef _WIN32
+    #define F_CLEAR "cls"
+    #define _comp(a,b) stricmp(a,b)
+#else
+    #define F_CLEAR "clear"
+    #define _comp(a,b) strcasecmp(a,b)
+#endif
+
 
 typedef struct {
     char *nome;
@@ -217,7 +221,7 @@ int main() {
 				}
 			} else {
 				puts("Ricerca lineare...");
-				i=ricercaDicotomica(atleti, n, p, nome);
+				i=ricercaLineare(atleti, n, p, nome);
 				if (i!=-1) {
 					printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
 				} else {
@@ -329,18 +333,12 @@ int ricercaLineare(atleta_t* atleti, int n, char* s, campo_e campo) {
 	int i;
 	if (campo==codice) {
 		for (i=0; i<n; i++) {
-			if (_comp(atleti[i].codice, s)==0) {
-				return i;
-			}
+			if (_comp(atleti[i].codice, s)==0) return i;
 		}
-		return -1;
 	} else if (campo==nome) {
 		for (i=0; i<n; i++) {
-			if (startsWith(atleti[i].cognomenome, s)==1) {
-				return i;
-			}
+			if (startsWith(atleti[i].cognomenome, s)==1) return i;
 		}
-		return -1;
 	}
 	return -1;
 }
