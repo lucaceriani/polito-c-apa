@@ -1,11 +1,3 @@
-## Ignore file without extention
-# Ignore all
-*
-# Unignore all with extensions
-!*.*
-# Unignore all dirs
-!*/
-
 # Object files
 *.o
 *.ko
