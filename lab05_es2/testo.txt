@@ -1,0 +1,4 @@
+1 2 a3.14 Ciao
+3 4 b1.618 pasta
+5 6 c56.234 maglia
+7 8 g724.234 ciccio
