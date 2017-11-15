@@ -1,0 +1,6 @@
+5
+A0001 Marco Baldo giavellotto 0000/01/01 666
+A1122 Pippo Baudo giavellotto 1942/09/27 6
+A3786 Gianluca Scassi basket 1956/04/26 5
+A1234 Emma Rossi nuoto 1997/10/31 6
+A0002 Mario Goffredi Nuoto 2015/04/16 2
