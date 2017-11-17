@@ -34,6 +34,7 @@
 # Code::Blocks files
 *.depend
 *.layout
+*.cbp
 
 # Personal projects
 _*
