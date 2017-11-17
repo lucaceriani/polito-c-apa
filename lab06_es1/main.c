@@ -39,7 +39,7 @@ int carrello(Item* p, int n, int k, float b, Item *sol, int n_sol, int start, in
 }
 
 int main() {
-    int i, n, k, c;
+    int i, n, k, c=0, soluzioni=0;;
     float b;
     FILE *fp;
     Item *p, *sol;
@@ -68,9 +68,15 @@ int main() {
     printf("Budget massimo: ");
     scanf("%f", &b);
 
-    while(carrello(p, n, k, b, sol, 0, 0, 0)!=0) k++;
+    for(;;) {
+        // provo dal k inserito fino a quando non trovo più soluzioni
+        // ad ogni passo incremento k di 1.
+        c=carrello(p, n, k++, b, sol, 0, 0, 0);
+        if (c==0) break;
+        else soluzioni+=c;
+    }
 
-    printf("\n\n%d soluzion%c trovat%c!", c, c==1?'e':'i', c==1?'a':'e');
+    printf("\n\n%d soluzion%c trovat%c!", soluzioni, soluzioni==1?'e':'i', soluzioni==1?'a':'e');
 
 }
 
