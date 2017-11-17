@@ -229,7 +229,7 @@ int main() {
                 }
             }
             break;
-            
+
         default:
             puts("Comando non trovato.\n");
         }
@@ -257,7 +257,7 @@ void reverseDate(char *s) {
     int d,m,y;
     sscanf(s, "%d/%d/%d",&d,&m,&y);
     if (d>1000) return; // esco se mi accorgo che è già salvata una data invertita
-    sprintf(s, "%.4d/%.2d/%.2d",y,m,d);   
+    sprintf(s, "%.4d/%.2d/%.2d",y,m,d);
 }
 
 void insetionSort(atleta_t *atleti, int n, campo_e campo) {
@@ -277,12 +277,14 @@ void insetionSort(atleta_t *atleti, int n, campo_e campo) {
     }
 }
 
-int startsWith(char *a, char *b) { 
+int startsWith(char *a, char *b) {
     // case unsensitive
     int i, n=0;
-    // voglio proseguire il confronto fino all'ultima
-    // lettera della parola più corta
-    n=MIN(strlen(a), strlen(b));
+    // voglio proseguire il confronto fino all'ultima lettera
+    // di b (che dorevbbe essere la più corta)
+
+    n=strlen(b);
+    if (strlen(a)<n) return 0;
 
     for (i=0; i<n; i++) {
         if (tolower(a[i])!=tolower(b[i])) {
@@ -292,11 +294,12 @@ int startsWith(char *a, char *b) {
     return 1;
 }
 
+
 int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
 
     int l,r,m;
     l=0; r=n-1;
-    
+
     if (campo==codice) {
         while ((r-l)!=0) {
             m=(l+r)/2;
@@ -310,7 +313,7 @@ int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
         }
         if (_comp(atleti[l].codice, s)==0) return l;
         return -1;
-        
+
     } else if (campo==nome) {
         while ((r-l)!=0) {
             m=(l+r)/2;
@@ -354,7 +357,7 @@ char* getCampo(atleta_t *atleti, int i, campo_e campo) {
         case categoria:
             return atleti[i].categoria;
         default:
-            return NULL;        
+            return NULL;
     }
 }
 
