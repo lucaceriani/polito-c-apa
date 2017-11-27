@@ -18,14 +18,18 @@ float sum_price(Item* p, int n) {
     return sum;
 }
 
-int carrello(Item* p, int n, int k, float b, Item *sol, int n_sol, int start, int count) {
+int carrello(Item* p, int n, int k, float b, Item *sol, int n_sol,
+             int start, int count) {
     int i;
+    // mi calcolo la somma dei prodotti nel carrello
     float sum=sum_price(sol, n_sol);
+    // caso terminale la somma è minore di 10 e ho il numero di
+    // soluziioni che desidero
     if (sum <= b && n_sol>=k) {
         for (i=0; i<n_sol; i++) {
             printf("%s ", sol[i].prodotto);
         }
-        printf(".................%.2f\n", sum);
+        printf("= %.2f\n", sum);
         return count+1;
     }
 
@@ -34,7 +38,6 @@ int carrello(Item* p, int n, int k, float b, Item *sol, int n_sol, int start, in
         sol[n_sol]=p[i];
         count=carrello(p, n, k, b, sol, n_sol+1, i+1, count);
     }
-
     return count;
 }
 
@@ -76,8 +79,11 @@ int main() {
         else soluzioni+=c;
     }
 
-    printf("\n\n%d soluzion%c trovat%c!", soluzioni, soluzioni==1?'e':'i', soluzioni==1?'a':'e');
+    // output che rispetta le regole dell'italiano
+    printf("\n\n%d soluzion%c trovat%c!", soluzioni, soluzioni==1?'e':'i',
+           soluzioni==1?'a':'e');
 
+    return 0;
 }
 
 

@@ -62,18 +62,20 @@ int main() {
             printf("Parola non trovata\n");
             continue;
         }
-
-        printf("Parola \"%s\" trovata in (%d,%d) ", cerca, convertiIndice(parole[indice], pagina));
+        p=convertiIndice(parole[indice], pagina);
+        printf("Parola \"%s\" trovata in (%d,%d) ", cerca, p.r, p.c);
 
         // ricerca avanti e indietro delle parole uguali
         i=indice;
         while (confrontaParole(cerca, parole[++i])==0) {
-            printf("(%d,%d) ", convertiIndice(parole[i], pagina));
+            p=convertiIndice(parole[i], pagina);
+            printf("(%d,%d) ", p.r, p.c);
 
         }
         i=indice;
         while (confrontaParole(cerca, parole[--i])==0) {
-            printf("(%d,%d) ", convertiIndice(parole[i], pagina));
+            p=convertiIndice(parole[i], pagina);
+            printf("(%d,%d) ", p.r, p.c);
         }
         puts("");
 

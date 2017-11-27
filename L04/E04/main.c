@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 int somma(int);
 
@@ -16,9 +15,7 @@ int main() {
 }
 
 int somma(int x) {
-    if (x<10) {
-        return x;
-    }
+    if (x<10) return x;
     return (x%10)+somma(x/10);
 }
 /* esemplificazione soluzione:

@@ -9,8 +9,6 @@
 #define non_strutturato ;;
 #define MAX_PERCORSO_FILE 100
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 #ifdef _WIN32
     #define F_CLEAR "cls"
     #define _comp(a,b) stricmp(a,b)
@@ -48,11 +46,13 @@ void maiuscola(char*);
 void stampaAnagrafica(atleta_t*, int, FILE*);
 void reverseDate(char*);
 void insetionSort(atleta_t*, int, campo_e);
+void stampaAtleta(atleta_t*, FILE*);
 int sonoOrdinati(char*, char*);
 int startsWith(char*, char*); // se a comincia con b;
 int ricercaDicotomica(atleta_t*, int, char*, campo_e);
 int ricercaLineare(atleta_t*, int, char*, campo_e);
-char *getCampo(atleta_t*, int, campo_e);
+char *getCampo(atleta_t*,  campo_e);
+
 int main() {
 
     FILE *fp;
@@ -61,7 +61,7 @@ int main() {
     int scelta=-1;
     int n=0, i=0;
     campo_e ordinato=-1;
-    char c[LUNG_CODICE+1], p[MAX_PERCORSO_FILE+1]; // variabili riutilizzate per l'input utente
+    char uInput[MAX_PERCORSO_FILE+1]; // variabili riutilizzate per l'input utente
 
     // apretura e controllo file
     if ((fp=fopen(NOME_FILE, "r"))==NULL){
@@ -76,9 +76,12 @@ int main() {
     atleti=(atleta_t*)malloc(n*sizeof(atleta_t));
 
     i=0;
-    while(i<n && fscanf(fp, "%s %s %s %s %s %d", tmp.codice, tmp.nome, tmp.cognome, tmp.categoria, tmp.data, &tmp.ore)==6) {
+    while(i<n && fscanf(fp, "%s %s %s %s %s %d",
+                        tmp.codice, tmp.nome, tmp.cognome, tmp.categoria,
+                        tmp.data, &tmp.ore)==6) {
 
-        //sizeof(char)==1 nella maggior parte dei sistemi, lo ometto per semplificare
+        // sizeof(char)==1 nella maggior parte dei sistemi
+        // lo ometto per semplificare
 
         atleti[i].nome=(char*)malloc(strlen(tmp.nome)+1);
         strcpy(atleti[i].nome, tmp.nome);
@@ -127,18 +130,18 @@ int main() {
             return 0;
         case 1:
             printf("Stampa su file? [s/n] ");
-            scanf("%s", c);
-            if (tolower(c[0])=='s') {
+            scanf("%s", uInput);
+            if (tolower(uInput[0])=='s') {
                 printf("Inserisci il nome del file: ");
-                scanf("%s", p);
+                scanf("%s", uInput);
                 // riuso fp
-                if ((fp=fopen(p, "w"))==NULL) {
-                    printf("Errore! Impossibile aprire il file \"%s\"", p);
+                if ((fp=fopen(uInput, "w"))==NULL) {
+                    printf("Errore! Impossibile aprire il file \"%s\"", uInput);
                 } else {
                     fprintf(fp, "%d\n", n);
                     stampaAnagrafica(atleti, n, fp);
                     fclose(fp);
-                    printf("Scrittura sul file \"%s\" avvenuta con successo!\n", p);
+                    printf("Salvato il file \"%s\"!\n", uInput);
                     break;
                 }
             }
@@ -165,71 +168,60 @@ int main() {
             // stampo le categorie una volta sola, considero un caso a parte
             // per il primo atleta per non incorrere in problemi con il for
             printf(" -> %s\n", atleti[0].categoria);
-            printf("%s %s %s %s %d\n", atleti[0].codice, atleti[0].nome, atleti[0].cognome, atleti[0].data, atleti[0].ore);
+            stampaAtleta(&atleti[0], stdout);
             for (i=1; i<n; i++) {
                 if (_comp(atleti[i].categoria,atleti[i-1].categoria)!=0) {
                     printf("\n -> %s\n", atleti[i].categoria);
                 }
-                printf("%s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].data, atleti[i].ore);
+                stampaAtleta(&atleti[i], stdout);
             }
             break;
         case 6:
-            printf("Inserire il codice atleta per modificarne il monte ore setimanale: ");
-            scanf("%s", c);
+            printf("Codice atleta per modificarne il monte ore setimanale: ");
+            scanf("%s", uInput);
             if (ordinato==codice) {
                 puts("Ricerca dicotomica...");
-                i=ricercaDicotomica(atleti, n, c, codice);
+                i=ricercaDicotomica(atleti, n, uInput, codice);
             } else {
                 puts("Ricerca lineare...");
-                i=ricercaLineare(atleti, n, c, codice);
+                i=ricercaLineare(atleti, n, uInput, codice);
             }
             if (i!=-1) {
-                    printf("Trovato:\n%s -> %s %s %s %s\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data);
-                    printf("Monte ore attuale: %d\nNuovo monte ore: ", atleti[i].ore);
+                    puts("Trovato:"); stampaAtleta(&atleti[i], stdout);
+                    printf("Monte ore attuale: %d\n", atleti[i].ore);
+                    printf("Nuovo monte ore: ");
                     scanf("%d", &atleti[i].ore);
                     puts("Monte ore modificato correttamente!");
                 } else {
-                    printf("Atleta con codice \"%s\" non trovato.\n", p);
+                    printf("Atleta con codice \"%s\" non trovato.\n", uInput);
                 }
             break;
         case 7:
             printf("Inserire il codice atleta: ");
-            scanf("%s", c);
+            scanf("%s", uInput);
             if (ordinato==codice) {
                 puts("Ricerca dicotomica...");
-                i=ricercaDicotomica(atleti, n, c, codice);
+                i=ricercaDicotomica(atleti, n, uInput, codice);
             } else {
                 puts("Ricerca lineare...");
-                i=ricercaLineare(atleti, n, c, codice);
+                i=ricercaLineare(atleti, n, uInput, codice);
             }
-            if (i!=-1) {
-                    printf("%s -> %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-                } else {
-                    printf("Atleta con codice \"%s\" non trovato.\n", p);
-                }
+            if (i!=-1) stampaAtleta(&atleti[i], stdout);
+            else printf("Atleta \"%s\" non trovato.\n", uInput);
             break;
         case 8:
             printf("Inserire il cognome dell'atleta: ");
-            scanf("%s", p);
+            scanf("%s", uInput);
             if (ordinato==nome) {
                 puts("Ricerca dicotomica...");
-                i=ricercaDicotomica(atleti, n, p, nome);
-                if (i!=-1) {
-                    printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-                } else {
-                    printf("Atleta \"%s\" non trovato.\n", p);
-                }
+                i=ricercaDicotomica(atleti, n, uInput, nome);
             } else {
                 puts("Ricerca lineare...");
-                i=ricercaLineare(atleti, n, p, nome);
-                if (i!=-1) {
-                    printf("%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
-                } else {
-                    printf("Atleta \"%s\" non trovato.\n", p);
-                }
+                i=ricercaLineare(atleti, n, uInput, nome);
             }
+            if (i!=-1) stampaAtleta(&atleti[i], stdout);
+            else printf("Atleta \"%s\" non trovato.\n", uInput);
             break;
-
         default:
             puts("Comando non trovato.\n");
         }
@@ -246,17 +238,26 @@ int sonoOrdinati(char *a, char *b) {
     return x<0?1:(x==0?0:-1);
 }
 
+void stampaAtleta(atleta_t *atleti, FILE *fp) {
+    fprintf(fp, "%s %s %s %s %s %d\n",
+            atleti->codice, atleti->nome, atleti->cognome,
+            atleti->categoria, atleti->data, atleti->ore);
+}
+
 void stampaAnagrafica(atleta_t *atleti, int n, FILE* fp) {
     int i;
     for (i=0; i<n; i++) {
-        fprintf(fp, "%s %s %s %s %s %d\n", atleti[i].codice, atleti[i].nome, atleti[i].cognome, atleti[i].categoria, atleti[i].data, atleti[i].ore);
+        // &atleti[i] equivale ad atleti+i si preferisce il primo per
+        // aumentare al leggibilità
+
+        stampaAtleta(&atleti[i], fp);
     }
 }
 
 void reverseDate(char *s) {
     int d,m,y;
     sscanf(s, "%d/%d/%d",&d,&m,&y);
-    if (d>1000) return; // esco se mi accorgo che è già salvata una data invertita
+    if (d>1000) return; // esco se mi accorgo che è già invertita
     sprintf(s, "%.4d/%.2d/%.2d",y,m,d);
 }
 
@@ -268,8 +269,13 @@ void insetionSort(atleta_t *atleti, int n, campo_e campo) {
         x = atleti[i];
         j=i-1;
 
-        while (j>=0 && sonoOrdinati(getCampo(&x,0,campo), getCampo(atleti,j,campo))==1) {
-            // controllo di che campo si sta parlando
+        // uso getCampo per passare da campo enum a puntantatore alla stringa
+        // del campo che si chiuama come l'enum della corrispettiva struct
+
+        while (
+               j>=0 &&
+               sonoOrdinati(getCampo(&x,campo), getCampo(&atleti[j],campo))==1
+               ) {
             atleti[j+1] = atleti[j];
             j--;
         }
@@ -305,7 +311,7 @@ int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
             m=(l+r)/2;
             if (_comp(atleti[m].codice, s)==0) {
                 return m;
-            } else if (_comp(atleti[m].codice, s)>0){ // proseguo nel sottovettore sx
+            } else if (_comp(atleti[m].codice, s)>0){ // proseguo a sx
                 r=m;
             } else { // proseguo nel sottovettore dx
                 l=m+1;
@@ -319,7 +325,7 @@ int ricercaDicotomica(atleta_t* atleti, int n, char* s, campo_e campo) {
             m=(l+r)/2;
             if (startsWith(atleti[m].cognomenome, s)==1) {
                 return m;
-            } else if (_comp(atleti[m].cognomenome, s)>0){ // proseguo nel sottovettore sx
+            } else if (_comp(atleti[m].cognomenome, s)>0){ // proseguo a sx
                 r=m;
             } else { // proseguo nel sottovettore dx
                 l=m+1;
@@ -346,16 +352,16 @@ int ricercaLineare(atleta_t* atleti, int n, char* s, campo_e campo) {
     return -1;
 }
 
-char* getCampo(atleta_t *atleti, int i, campo_e campo) {
+char* getCampo(atleta_t *atleti, campo_e campo) {
     switch (campo) {
         case nome:
-            return atleti[i].cognomenome;
+            return atleti->cognomenome;
         case codice:
-            return atleti[i].codice;
+            return atleti->codice;
         case data:
-            return atleti[i].data;
+            return atleti->data;
         case categoria:
-            return atleti[i].categoria;
+            return atleti->categoria;
         default:
             return NULL;
     }

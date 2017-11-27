@@ -12,20 +12,21 @@ typedef struct {
 } Livello;
 
 
-int seq(int pos, Livello *val, char *sol, int n, int count, FILE *fp) {
+void seq(int pos, Livello *val, char *sol, int n, FILE *fp) {
     int i;
+    // caso terminale la soluzione ha n elementi
     if (pos>=n) {
         for (i = 0; i < n; i++) fprintf(fp, "%c", sol[i]);
         fprintf(fp, "\n");
-        return count+1;
+        return;
     }
 
     for (i = 0; i < val[pos].num_scelte; i++) {
         sol[pos] = val[pos].scelte[i];
-        count = seq(pos+1, val, sol, n, count, fp);
+        seq(pos+1, val, sol, n, fp);
     }
 
-    return count;
+    return;
 }
 
 int main() {
@@ -43,15 +44,19 @@ int main() {
     sol=(char*)malloc(n*sizeof(char));
 
     for (i=0; i<n; i++) {
+        // prendo tutta la stringa e la salvo
         fscanf(fp, "%s", val[i].scelte);
+        // ovviamente il numero di scelete possibili sull'i-esimo livello
+        // è il numero di caratteri che ci sono dentro val[i].scelta
         val[i].num_scelte=strlen(val[i].scelte);
     }
     fclose(fp);
 
-    // uso fp per aprire il file di outpu
+    // riciclo fp per aprire il file di output
     if ((fp=fopen(NOME_FILE_OUT, "w"))==NULL) exit(1);
 
-    seq(0, val, sol, n, 0, fp);
+    // lancio la ricorsione che scriverà tutte le soluzioni su fp
+    seq(0, val, sol, n,  fp);
     fclose(fp);
 
     return 0;
