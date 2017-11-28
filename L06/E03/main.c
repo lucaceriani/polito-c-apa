@@ -9,8 +9,6 @@
 #define MAX_PERCORSO_FILE 100
 #define non_strutturato ;;
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-
 #ifdef _WIN32
     #define F_CLEAR "cls"
     #define _comp(a,b) stricmp(a,b)
@@ -87,6 +85,8 @@ int main() {
         tmpAtleta.cognome, tmpAtleta.nome, tmpAtleta.categoria, tmpAtleta.data,
         &tmpAtleta.ore)==6) {
 
+        //puts(tmpAtleta.codice);
+
         // mi salvo il cognomenome
         strcatMia(tmpAtleta.cognomenome, tmpAtleta.cognome, tmpAtleta.nome);
 
@@ -105,7 +105,7 @@ int main() {
         puts("1. Stampa contenuto anagrafica");
         puts("2. Stampa gli atleti divisi per categoria");
         puts("3. Aggiornamento monte ore settimanali");
-        puts("4. Ricerca atlata per codice o cognome parziale");
+        puts("4. Ricerca atleta per codice o cognome parziale");
         puts("5. Aggiungi un atleta");
         puts("6. Cancella un atleta");
         puts("0. Esci");
@@ -317,6 +317,7 @@ int esisteCategoria(char **categorie, char *c, int n) {
 }
 
 void strcatMia(char *dest, char *src1, char *src2) {
+    strcpy(dest, "");
     strcpy(dest, src1);
     strcat(dest, src2);
 }
