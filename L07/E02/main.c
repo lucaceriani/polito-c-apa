@@ -3,8 +3,12 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "liste.h"
+
 #define FILE_ATLETI "atleti.txt"
 #define FILE_ESERCIZI "esercizi.txt"
+
+#define MAX_ESERCIZIO 50
 #define MAX_NOME 25
 #define LUNG_CODICE 5
 #define MAX_PERCORSO_FILE 100
@@ -12,10 +16,8 @@
 
 #ifdef _WIN32
     #define F_CLEAR "cls"
-    #define _comp(a,b) stricmp(a,b)
 #else
     #define F_CLEAR "clear"
-    #define _comp(a,b) strcasecmp(a,b)
 #endif
 
 typedef struct {
@@ -26,47 +28,90 @@ typedef struct {
     char codice[LUNG_CODICE+1];
     char data[11];
     int ore;
+    Lista *listaEs;
 } Atleta;
 
-typedef struct node {
-    Atleta val;
-    struct node *next;
-} node_t, *link;
+typedef struct {
+    char nomeEs[MAX_ESERCIZIO+1];
+    char catEs[MAX_ESERCIZIO+1];
+    char tipoEs[MAX_ESERCIZIO+1];
+} esercizio_t;
+
+typedef struct {
+    esercizio_t *es;
+    char nomeEs[MAX_ESERCIZIO+1];
+    int set,rep;
+} pianoEs_t;
+
+typedef struct {
+    esercizio_t *vettEs;
+    int nEs;
+} tabellaEs;
 
 typedef enum {
     data, nome, codice, categoria
 } campo_e;
 
-link newNode(Atleta, link);
-link addTailNode(link, Atleta);
-link delNode(link, char*);
+
+Atleta *getAtletaFromNode(link x);
+
+pianoEs_t *getPianoEsFromNode(link x);
+esercizio_t *linkEs(tabellaEs*, char*);
+void stampaPianoEs(pianoEs_t*, FILE*);
+void modificaPianoEs(pianoEs_t*, int, int);
 
 link cercaAtleta(link, char*);
 link inputCercaAtleta(link);
 int esisteCategoria(char**, char*, int);
-int startsWith(char*, char*);
+int startsWith(const char*, const char*);
 void strcatMia(char*, char*, char*);
-void stampaAnagrafica(link, FILE*);
+void stampaAnagrafica(Lista*, FILE*);
 void stampaAtleta(link, FILE*);
 void aggiornaCategorie(char**, char*, int*);
+
+void makeDotTxt(char*, const char*);
+
+FILE *inputStampaSuFile();
 
 
 int main() {
 
-    FILE *fp;
-    Atleta tmpAtleta;
-    link head=NULL, p;
+    FILE *fp, *fEs;
+    Atleta tmpAtleta, *tmpAtletaP;
+    Lista *atleti;
+    link p;
 
-    char c[MAX_NOME+1], f[MAX_PERCORSO_FILE+1]; // variabili per l'input
+    tabellaEs *esercizi=malloc(sizeof(tabellaEs));
+    esercizio_t tmpEs;
+    pianoEs_t tmpPiano, *tmpPianoP;
+
+
+    char uInput[100], fileTxt[10];
     char **categorie; // contiene tutte le categorie
     int n_categorie=0; // importante inizializzato a 0
 
     int scelta=-1;
-    int n=0, i=0;
+    int n=0, i=0, x,y;
 
-    /**
-      *      File degli atleti
-      */
+     // file ESERCIZI
+    i=0; fp=NULL;
+    if ((fp=fopen(FILE_ESERCIZI, "r"))==NULL){
+        printf("Errore! Impossibile aprire il file \"%s\"!\n", FILE_ESERCIZI);
+        exit(1);
+    }
+    if (fscanf(fp, "%d\n", &n)!=1) exit(2);
+    // alloco il vettore degli esercizi
+    esercizi->vettEs=malloc(n*sizeof(esercizio_t));
+    esercizi->nEs=n;
+
+    while (i<n && fscanf(fp, "%s %s %s",tmpEs.nomeEs,tmpEs.catEs,tmpEs.tipoEs)==3)
+        esercizi->vettEs[i++]=tmpEs;
+
+    fclose(fp);
+    // -------------------------------------------------------------------------
+
+    // file degli ATLETI  (riciclo fp)
+    atleti=initList(sizeof(Atleta));
 
     // apertura e controllo file
     if ((fp=fopen(FILE_ATLETI, "r"))==NULL){
@@ -77,42 +122,38 @@ int main() {
     // controllo della presenza e della correttezza della prima riga del file
     if (fscanf(fp, "%d\n", &n)!=1) exit(2);
 
-    // alloco n puntatori a vettore char, un'idea poteva essere quella di
-    // far puntare direttamente al campo char* categoria di ogni atleta
-    // che si presenta con una categoria nuova, ma visto che si prevede
-    // la cancellazione di atleti, potrebbe essere che si vada a cancellare
-    // quell'atleta che ha il nome della categoria puntato da categorie, meglio
-    // copiare il nome della cateoria in un posto sicuro.
     categorie=(char**)malloc(n*sizeof(char*));
 
     i=0;
-    while(i<n && fscanf(fp, "%s %s %s %s %s %d", tmpAtleta.codice,
+    while(i<n && fscanf(fp, "%s %s %s %s %s %d\n", tmpAtleta.codice,
         tmpAtleta.cognome, tmpAtleta.nome, tmpAtleta.categoria, tmpAtleta.data,
         &tmpAtleta.ore)==6) {
 
-        //puts(tmpAtleta.codice);
-
-        // mi salvo il cognomenome
         strcatMia(tmpAtleta.cognomenome, tmpAtleta.cognome, tmpAtleta.nome);
-
-        // controllo e aggiunta della categoria al vettore delle categorie
         aggiornaCategorie(categorie, tmpAtleta.categoria, &n_categorie);
+        // inizializzo la lista degli esercizi
 
-        // aggiungi tmpAtleta (in testa alla lista per semplicità)
-        head=newNode(tmpAtleta, head);
+        tmpAtleta.listaEs=initList(sizeof(pianoEs_t));
+/*
+        // cerco se l'atleta ha un piano esercizi come file
+        if ((fEs=fopen(tmpAtleta.codice, "r"))!=NULL) {
+            // se ho trovato un file con il codice dell'atleta...
+            while (fscanf(fEs, "%s %d %d",
+                          tmpPiano.nomeEs, &tmpPiano.set, &tmpPiano.rep)==3) {
+
+                tmpPiano.es=linkEs(esercizi, tmpPiano.nomeEs);
+
+                addTail(tmpAtleta.listaEs, &tmpPiano, "c");
+            }
+        } else {
+            printf("non ho trovato un piano esercizi per %s\n", tmpAtleta.codice);
+        }
+*/
+        addTail(atleti, &tmpAtleta, "c");
+
     }
     fclose(fp);
-
-     /**
-      *      File degli esericizi
-      */
-
-    if ((fp=fopen(FILE_ESERCIZI, "r"))==NULL){
-        printf("Errore! Impossibile aprire il file \"%s\"!\n", FILE_ESERCIZI);
-        exit(1);
-    }
-    if (fscanf(fp, "%d\n", &n)!=1) exit(2);
-
+    //getc(stdin);
 
     // menu'
     for(non_strutturato) {
@@ -124,9 +165,10 @@ int main() {
         puts("4. Ricerca atleta per codice o cognome parziale");
         puts("5. Aggiungi un atleta");
         puts("6. Cancella un atleta");
-        puts("----------------------------------------------------");
-        puts("7. Caricare piano allenamenti");
-        puts("8. ");
+        puts("---------------------------------------------------------------");
+        puts("7. Caricare / salvare esercizi di un atleta");
+        puts("8. Modificare set / ripetizioni di un esercizio di un atleta");
+        puts("---------------------------------------------------------------");
         puts("0. Esci");
         puts("");
         printf("> ");
@@ -136,24 +178,10 @@ int main() {
         case 0:
             return 0;
         case 1: // stampa contetnuto anagrafica
-            printf("Stampa su file? [s/n] ");
-            scanf("%s", c);
-            if (tolower(c[0])=='s') {
-                printf("Inserisci il nome del file: ");
-                scanf("%s", f);
-                // riciclo fp
-                if ((fp=fopen(f, "w"))==NULL) {
-                    printf("Errore! Impossibile aprire il file \"%s\"", f);
-                    break;
-                } else {
-                    fprintf(fp, "%d\n", n);
-                    stampaAnagrafica(head, fp);
-                    fclose(fp);
-                    puts("Scrittura avvenuta con successo!");
-                    break;
-                }
-            }
-            stampaAnagrafica(head, stdout);
+            fp=inputStampaSuFile();
+            fprintf(fp, "%d\n", n);
+            stampaAnagrafica(atleti, fp);
+            if (fp!=stdout) fclose(fp);
             break;
         case 2: // stamapa divisi per categoria
             // ciclo esterno sulle categorie
@@ -161,22 +189,25 @@ int main() {
                 printf(" -> %s\n", categorie[i]);
                 // data la categoria categorie[i] cerco quali atleti vi
                 // appartengono e li stampo
-                for (p=head; p!=NULL; p=p->next) {
-                    if (_comp(p->val.categoria, categorie[i])==0)
+
+                for (p=getHead(atleti); p!=NULL; p=getNext(p)) {
+                    tmpAtletaP=getAtletaFromNode(p);
+                    if (strcasecmp(tmpAtletaP->categoria, categorie[i])==0)
                         stampaAtleta(p, stdout);
                 }
             }
             break;
         case 3: // aggiornamento monte ore settimanli
-            p=inputCercaAtleta(head);
+            p=inputCercaAtleta(getHead(atleti));
+            tmpAtletaP=getAtletaFromNode(p);
             if (p==NULL) break;
-            printf("Monte ore attuali: %d\n", p->val.ore);
+            printf("Monte ore attuali: %d\n", tmpAtletaP->ore);
             printf("Nuovo monte ore: ");
-            scanf("%d", &(p->val.ore));
+            scanf("%d", &(tmpAtletaP->ore));
             puts("Monte ore aggiornato correttamente!");
             break;
         case 4: // ricerca atleta
-            inputCercaAtleta(head);
+            inputCercaAtleta(getHead(atleti));
             break;
         case 5: // aggiungi atleta
             printf("Codice:    ");
@@ -195,25 +226,79 @@ int main() {
             // salvo il cognomenome
             strcatMia(tmpAtleta.cognomenome, tmpAtleta.cognome, tmpAtleta.nome);
 
-            if ((head=addTailNode(head, tmpAtleta))!=NULL) {
-                // aggiorno le categorie
-                aggiornaCategorie(categorie, tmpAtleta.categoria, &n_categorie);
-                puts("Atleta aggiunto correttamente!");
-             } else {
-                puts("Impossibile aggiungere l'altleta alla lista!");
-            }
+            addTail(atleti, &tmpAtleta, "c")==1;
+            // aggiorno le categorie
+            aggiornaCategorie(categorie, tmpAtleta.categoria, &n_categorie);
+            puts("Atleta aggiunto correttamente!");
 
             break;
         case 6: // cancellazione atleta
             // se la ricerca trova qualcosa, p diventa ilpuntatore
             // a quello che la ricera ha trovato
-            if ((p=inputCercaAtleta(head))==NULL) break;
+            if ((p=inputCercaAtleta(getHead(atleti)))==NULL) break;
             printf("Rimuovere l'atleta trovato? [s/n] ");
-            scanf("%s", c);
-            if (tolower(c[0])=='s') {
-                // cancella atleta con codice p->val.codice
-                head=delNode(head, p->val.codice);
+            scanf("%s", uInput);
+            if (tolower(uInput[0])=='s') {
+                // cancella atleta puntato da p
+               delNode(atleti, p);
+            }
+            break;
+        case 7:
+            // caricare / salvare esericizi per un atleta
+            if ((p=inputCercaAtleta(getHead(atleti)))==NULL) break;
+            tmpAtletaP=getAtletaFromNode(p);
 
+            if ((p=getHead(tmpAtletaP->listaEs))!=NULL) {
+                // se gli esercizi sono già stati caricati
+                fp=inputStampaSuFile();
+                for (; p!=NULL; p=getNext(p))
+                    stampaPianoEs(getPianoEsFromNode(p), fp);
+                if (fp!=stdout) fclose(fp);
+            } else {
+                // cerco di caricare il piano esercizi per l'altleta
+                makeDotTxt(fileTxt, tmpAtletaP->codice);
+                if ((fEs=fopen(fileTxt, "r"))!=NULL) {
+                    // se ho trovato un file con il codice dell'atleta...
+                    while (fscanf(fEs, "%s %d %d",
+                           tmpPiano.nomeEs, &tmpPiano.set, &tmpPiano.rep)==3) {
+
+                        tmpPiano.es=linkEs(esercizi, tmpPiano.nomeEs);
+                        addTail(tmpAtletaP->listaEs, &tmpPiano, "c");
+                    }
+                    puts("Piano degli esercizi caricato correttamente");
+                    fclose(fEs);
+                } else {
+                    printf("Non ho trovato un piano esercizi per %s\n",
+                           tmpAtletaP->codice);
+                }
+            }
+            break;
+        case 8:
+            // modificare il numero di set/ripetizioni
+            if ((p=inputCercaAtleta(getHead(atleti)))==NULL) break;
+            tmpAtletaP=getAtletaFromNode(p);
+
+            if ((p=getHead(tmpAtletaP->listaEs))!=NULL) {
+                // se gli esercizi sono già stati caricati
+                printf("Inserire il nome dell'esercizio per modificare set/ripetizioni: ");
+                scanf("%s", uInput);
+                printf("Nuovo n* set:         "); scanf("%d", &x);
+                printf("Nuovo n* ripetizioni: "); scanf("%d", &y);
+
+                // scorro tutti gli elementi della lista con p=head della lista
+                for (; p!=NULL; p=getNext(p)) {
+                    tmpPianoP=getPianoEsFromNode(p);
+                    // se becco l'esercizio che vogio modificare tramite
+                    // la strcmp lo modifico ocn i nuovi valori appena acquisiti
+                    if (strcasecmp(tmpPianoP->es->nomeEs, uInput)==0) {
+                        modificaPianoEs(tmpPianoP, x, y);
+                        puts("Esercizio modificato con successo!");
+                        break;
+                    }
+                }
+                if (p==NULL) puts("Esercizio non trovato!");
+            } else {
+                printf("Esercizi non caricati per \"%s\"", tmpAtletaP->codice);
             }
             break;
         default:
@@ -226,41 +311,33 @@ int main() {
 
     return 0;
 }
-link newNode(Atleta val, link next) {
-    link x = malloc(sizeof(node_t));
-    if (x==NULL) return NULL;
-    else {
-        x->val = val;
-        x->next = next;
-    }
-    return x;
+
+Atleta *getAtletaFromNode(link x) {
+    return (Atleta*)(getVal(x));
 }
 
-link addTailNode(link h, Atleta val) {
-    link x;
-    if (h==NULL)
-        return newNode(val, NULL);
-    for (x=h; x->next!=NULL; x=x->next);
-    x->next = newNode(val, NULL);
-    return h;
+pianoEs_t *getPianoEsFromNode(link x) {
+    return (pianoEs_t*)(getVal(x));
 }
 
-link delNode(link h, char *k) {
-    link x, p;
-    if (h == NULL)
-        return 0;
-    for (x=h, p=NULL; x!=NULL; p=x, x=x->next) {
-        if (_comp(x->val.codice, k)==0) {
-            if (x==h)
-                h = x->next;
-            else
-                p->next = x->next;
-            free(x);
-            break;
-        }
-    }
-    return h;
+void stampaPianoEs(pianoEs_t *p, FILE *fp) {
+    fprintf(fp, "%s %s %s", p->es->nomeEs, p->es->catEs, p->es->tipoEs);
+    fprintf(fp, " --> %d set da %d ripetizioni\n", p->set, p->rep);
 }
+
+void modificaPianoEs(pianoEs_t* piano, int set, int rep) {
+    piano->set=set;
+    piano->rep=rep;
+}
+
+esercizio_t *linkEs(tabellaEs* esercizi, char* nomeEs) {
+    int i;
+    for (i=0; i<esercizi->nEs; i++) {
+        if (strcasecmp(nomeEs, esercizi->vettEs[i].nomeEs)==0)
+            return &(esercizi->vettEs[i]);
+    }
+}
+
 
 link inputCercaAtleta(link h) {
     char c[MAX_NOME+1];
@@ -281,57 +358,86 @@ link cercaAtleta(link h, char *s) {
     // della stringa passata come chiave cerca o nel codice o nel cogome
     // (anche parziale).
 
-    // prima di tutto cerco di capire se so tratta di un codice. Un codice deve
+    // prima di tutto cerco di capire se si tratta di un codice. Un codice deve
     // avere tre caratteristiche:
     //      1 - avere cinque caratteri;
     //      2 - essere nel formato %c%d
     //      3 - tolower(c) == a;
     // se non si riscontrano queste due caratteristiche si presuppone che
     // la ricerca sia fatta per cognome.
+
+    // fpComp è il puntatore alla funzione di comparazione che cambia
+    // a seconda che sia un codice o un cognome
+    int (*fpComp)(const char*, const char*);
     char c;
     int d, isCodice=0;
+    Atleta *tmp;
 
     if (strlen(s)==LUNG_CODICE && sscanf(s, "%c%d", &c,&d) && tolower(c)=='a') {
+        // se è un codice
+        fpComp=strcasecmp;
         isCodice=1;
+    } else {
+        // se è un cognome
+        fpComp=startsWith;
     }
-        for (; h!=NULL; h=h->next) {
-            if (isCodice) {
-                if (_comp(h->val.codice, s)==0) return h;
-            } else {
-                if (startsWith(h->val.cognomenome, s)==1) return h;
-            }
+        for (; h!=NULL; h=getNext(h)){
+            tmp=getAtletaFromNode(h);
+            if (fpComp((isCodice?tmp->codice:tmp->cognomenome), s)==0) return h;
         }
+
     // se non sono ritornato prima vuol dire che non ho trovato niente
     return NULL;
 }
 
-void stampaAnagrafica(link h, FILE *fp) {
-    for (; h!=NULL; h=h->next) stampaAtleta(h, fp);
+FILE *inputStampaSuFile() {
+    FILE *fp;
+    char c[3], f[100];
+    printf("Stampa su file? [s/n] ");
+    scanf("%s", c);
+    if (tolower(c[0])=='s') {
+        printf("Inserisci il nome del file: ");
+        scanf("%s", f);
+
+        if ((fp=fopen(f, "w"))==NULL) {
+            printf("Errore! Impossibile aprire il file \"%s\"", f);
+            printf("Stampo a video...\n");
+            return stdout;
+        } else {
+            return fp;
+        }
+    } else {
+        return stdout;
+    }
+}
+
+void stampaAnagrafica(Lista *l, FILE *fp) {
+    link h=getHead(l);
+    for (; h!=NULL; h=getNext(h)) stampaAtleta(h, fp);
 }
 
 void stampaAtleta(link h, FILE *fp) {
-    Atleta a=h->val;
+    Atleta a=*(getAtletaFromNode(h));
     fprintf(fp, "%s %s %s %s %s %d\n", a.codice, a.nome, a.cognome,
-            a.categoria, a.data,a.ore);
+        a.categoria, a.data,a.ore);
 }
 
 void aggiornaCategorie(char **categorie, char *cat, int *n) {
-    // se non esiste la creo
+    // se non esiste la creao
     if (!esisteCategoria(categorie, cat, *n)) {
         // allocazione dello spazio per salvere il nome della categoria
-        categorie[*n]=(char*)malloc(strlen(cat+1));
+        categorie[*n]=(char*)malloc(strlen(cat)+1);
         strcpy(categorie[*n], cat);
         (*n)++;
     }
 }
 
 int esisteCategoria(char **categorie, char *c, int n) {
-    // passo ogni categoria e controllo con _comp();
+    // passo ogni categoria e controllo con strcasecmp();
     int i;
-    for (i=0; i<n; i++) {
-        // comparazione con la funzione personalizzata per il s.o. _comp
-        if (_comp(categorie[i], c)==0) return 1;
-    }
+    for (i=0; i<n; i++)
+        if (strcasecmp(categorie[i], c)==0) return 1;
+
     return 0;
 }
 
@@ -341,18 +447,21 @@ void strcatMia(char *dest, char *src1, char *src2) {
     strcat(dest, src2);
 }
 
-int startsWith(char *a, char *b) {
+int startsWith(const char *a, const char *b) {
     // case unsensitive
     int i, n=0;
     // voglio proseguire il confronto fino all'ultima lettera
     // di b (che dorevbbe essere la più corta)
 
     n=strlen(b);
-    if (strlen(a)<n) return 0;
+    if (strlen(a)<n) return -1;
 
-    for (i=0; i<n; i++)
-        if (tolower(a[i])!=tolower(b[i]))
-            return 0;
+    for (i=0; i<n; i++) if (tolower(a[i])!=tolower(b[i])) return -1;
 
-    return 1;
+    return 0;
+}
+
+void makeDotTxt(char *dst, const char *src) {
+    strcat(dst, src);
+    strcat(dst, ".txt");
 }
