@@ -11,10 +11,8 @@
 
 #ifdef _WIN32
     #define F_CLEAR "cls"
-    #define _comp(a,b) stricmp(a,b)
 #else
     #define F_CLEAR "clear"
-    #define _comp(a,b) strcasecmp(a,b)
 #endif
 
 typedef struct {
@@ -54,7 +52,8 @@ int main() {
 
     FILE *fp;
     Item tmpAtleta;
-    link head=NULL, p;
+    link head=NULL;
+    link p;
 
     char c[MAX_NOME+1], f[MAX_PERCORSO_FILE+1]; // variabili per l'input
     char **categorie; // contiene tutte le categorie
@@ -81,7 +80,7 @@ int main() {
     categorie=(char**)malloc(n*sizeof(char*));
 
     i=0;
-    while(i<n && fscanf(fp, "%s %s %s %s %s %d", tmpAtleta.codice,
+    while(i<n && fscanf(fp, "%s %s %s %s %s %d\n", tmpAtleta.codice,
         tmpAtleta.cognome, tmpAtleta.nome, tmpAtleta.categoria, tmpAtleta.data,
         &tmpAtleta.ore)==6) {
 
@@ -97,6 +96,7 @@ int main() {
         head=newNode(tmpAtleta, head);
     }
     fclose(fp);
+    //getc(stdin);
 
     // menu'
     for(non_strutturato) {
@@ -143,7 +143,7 @@ int main() {
                 // data la categoria categorie[i] cerco quali atleti vi
                 // appartengono e li stampo
                 for (p=head; p!=NULL; p=p->next) {
-                    if (_comp(p->val.categoria, categorie[i])==0)
+                    if (strcasecmp(p->val.categoria, categorie[i])==0)
                         stampaAtleta(p, stdout);
                 }
             }
@@ -208,7 +208,7 @@ int main() {
     return 0;
 }
 link newNode(Item val, link next) {
-    link x = malloc(sizeof(node_t));
+    link x = malloc(sizeof(*x));
     if (x==NULL) return NULL;
     else {
         x->val = val;
@@ -231,7 +231,7 @@ link delNode(link h, char *k) {
     if (h == NULL)
         return 0;
     for (x=h, p=NULL; x!=NULL; p=x, x=x->next) {
-        if (_comp(x->val.codice, k)==0) {
+        if (strcasecmp(x->val.codice, k)==0) {
             if (x==h)
                 h = x->next;
             else
@@ -269,19 +269,23 @@ link cercaAtleta(link h, char *s) {
     //      3 - tolower(c) == a;
     // se non si riscontrano queste due caratteristiche si presuppone che
     // la ricerca sia fatta per cognome.
+
+    // fpComp è il puntatore alla funzione di comparazione che cambia
+    // a seconda che sia un codice o un cognome
+    int (*fpComp)(char*, char*);
     char c;
-    int d, isCodice=0;
+    int d;
 
     if (strlen(s)==LUNG_CODICE && sscanf(s, "%c%d", &c,&d) && tolower(c)=='a') {
-        isCodice=1;
+        // se è un codice
+        fpComp=strcasecmp;
+    } else {
+        // se è un cognome
+        fpComp=startsWith;
     }
-        for (; h!=NULL; h=h->next) {
-            if (isCodice) {
-                if (_comp(h->val.codice, s)==0) return h;
-            } else {
-                if (startsWith(h->val.cognomenome, s)==1) return h;
-            }
-        }
+        for (; h!=NULL; h=h->next)
+            if (fpComp(s, h->val.codice)==0) return h;
+
     // se non sono ritornato prima vuol dire che non ho trovato niente
     return NULL;
 }
@@ -300,18 +304,18 @@ void aggiornaCategorie(char **categorie, char *cat, int *n) {
     // se non esiste la creao
     if (!esisteCategoria(categorie, cat, *n)) {
         // allocazione dello spazio per salvere il nome della categoria
-        categorie[*n]=(char*)malloc(strlen(cat+1));
+        categorie[*n]=(char*)malloc(strlen(cat)+1);
         strcpy(categorie[*n], cat);
         (*n)++;
     }
 }
 
 int esisteCategoria(char **categorie, char *c, int n) {
-    // passo ogni categoria e controllo con _comp();
+    // passo ogni categoria e controllo con strcasecmp();
     int i;
     for (i=0; i<n; i++) {
-        // comparazione con la funzione personalizzata per il s.o. _comp
-        if (_comp(categorie[i], c)==0) return 1;
+        // comparazione con la funzione personalizzata per il s.o. strcasecmp
+        if (strcasecmp(categorie[i], c)==0) return 1;
     }
     return 0;
 }
@@ -329,11 +333,9 @@ int startsWith(char *a, char *b) {
     // di b (che dorevbbe essere la più corta)
 
     n=strlen(b);
-    if (strlen(a)<n) return 0;
+    if (strlen(a)<n) return -1;
 
-    for (i=0; i<n; i++)
-        if (tolower(a[i])!=tolower(b[i]))
-            return 0;
+    for (i=0; i<n; i++) if (tolower(a[i])!=tolower(b[i])) return -1;
 
-    return 1;
+    return 0;
 }
