@@ -31,10 +31,13 @@
 # Debug files
 *.dSYM/
 
-# Code::Blocks files
+# Code::Blocks / CodeLite files
 *.depend
 *.layout
-# *.cbp => more complez projects require cbp files
+.codelite
+Makefile
+*.workspace
+*.d
 
 # Personal projects
 _*
