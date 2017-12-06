@@ -46,7 +46,16 @@ int areEnemies(int a, int b, Popolazione *p) {
     return 0;
 }
 
-int isValid(int n, int *sol, int m, Popolazione *p) {
+int isAllowedOnTree(int kIndex, int tIndex, Popolazione *p) {
+    int i,nAlberi, trovato=0;
+    nAlberi=p->koala[kIndex].nAlberi;
+    for (i=0; i<nAlberi; i++) {
+        if (p->koala[kIndex].alberi[i]==tIndex) trovato=1;
+    }
+    return trovato;
+}
+
+int isValid(int n, int *sol, int m, Popolazione *p, char modo) {
     int i,j,k;
     int totAlbero;
     
@@ -55,62 +64,69 @@ int isValid(int n, int *sol, int m, Popolazione *p) {
     // per ogni albero
     for (i=0; i<m; i++) {
         totAlbero=0;
-        // estrazione dei koala su un albero
+        // estrazione dei koala sull'i-esimo albero
         for (j=0; j<n; j++) {
             if (sol[j]==i) { // se fa parte del gruppo che sto considerando
                 solKoala[totAlbero++]=j;
             }
         }
-        // controllo quantità di koala
-       // printf("controllo albero... ");
-        if (totAlbero > p->maxPerAlbero) return 0;
-       // printf("passato!\n");
         
-       // printf("controllo famiglie ...");
+        // controllo quantità di koala
+        if (totAlbero > p->maxPerAlbero) return 0;
+        
         // controllo incopatibilità per famiglie
         for (j=0; j<totAlbero; j++) { //j indice della solKoala
             for (k=j; k<totAlbero; k++) {
-                if (areEnemies(j,k, p)) return 0;
+                if (areEnemies(solKoala[j],solKoala[k], p)) return 0;
             }
         }
-       // printf("passato!\n");
+        
+        // il controllo su che alberi si vive dipende dal parametro modo
+        if (modo=='a') { // se voglio controllare tutti i vincoli...
+            for (j=0; j<totAlbero; j++) { //j indice della solKoala
+                if (!isAllowedOnTree(solKoala[j],i,p)) return 0;
+            }
+        }
+        
+        
         
     }
     return 1;
 }
 
 // algoritmo di er
-int er(int n, int m, int pos, int *sol, Popolazione *p) {
-    static int count=0;
-    static int continua=1;
-    
-    if (!continua) return count;
+int er(int n, int m, int pos, int *sol, Popolazione *p, char modo, int continua) {
+
+    if (!continua) {
+        return continua;
+    }
     
     int i,j;
     
     if (pos>=n) {
-        count++;
-        if (isValid(n,sol,m,p)) {
+        //count++;
+        if (isValid(n,sol,m,p,modo)) {
             
-            printf("partizione in %d blocchi: ", m);
+            printf("Divisione koala in %d alberi su %d: ", m, p->nAlberiTot);
             for (i=0; i<m; i++) {
-                printf("{ ");
+                printf("\n\t{ ");
                 for (j=0; j<n; j++)
                     if (sol[j]==i)
                         printf("%d " ,j);
                 printf("} ");
             }
-            printf("\n%d operazioni.\n", count);
+            //printf("\n%d operazioni.\n", count);
+            puts("");
             continua=0;
         }
-        return count;
+        return continua;
     }
     
     for (i=0; i<m; i++) {
         sol[pos]=i;
-        er(n,m,pos+1,sol,p);
+        continua=er(n,m,pos+1,sol,p, modo, continua);
     }
-return count; 
+    return continua; 
 }
 
 int main(int argc, char **argv){
@@ -190,11 +206,21 @@ int main(int argc, char **argv){
     
     // ricerca della soluzione per ogni valore di alberi nella foresta
     sol=(int*)malloc(n*sizeof(int));
-    for (i=1; i<=p.nAlberiTot; i++)
-        er(p.nKoala, i, 0, sol, &p);
     
+    // p sta per parziali, a sta per all in riferimento ai vincoli da seguire
+    
+    printf("Massimo %d koala per ogni albero.\n\n", p.maxPerAlbero);
+    
+    puts("Non considerando i vincoli di \"hab.txt\":");
+    for (i=1; i<=p.nAlberiTot; i++)
+        if(er(p.nKoala, i, 0, sol, &p, 'p', 1)==0) break;
+        
+    
+    puts("\nConsiderando i vincoli di \"hab.txt\":");
+    for (i=1; i<=p.nAlberiTot; i++)
+        if(er(p.nKoala, i, 0, sol, &p, 'a', 1)==0) break;
 
-    getc(stdin);
+    printf("\nDone! Press enter..."); getc(stdin);
     
     return 0;
 }
