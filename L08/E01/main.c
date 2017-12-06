@@ -205,7 +205,7 @@ int main(int argc, char **argv){
     // fine della lettura dei dati
     
     // ricerca della soluzione per ogni valore di alberi nella foresta
-    sol=(int*)malloc(n*sizeof(int));
+    sol=(int*)malloc(p.nKoala*sizeof(int));
     
     // p sta per parziali, a sta per all in riferimento ai vincoli da seguire
     
