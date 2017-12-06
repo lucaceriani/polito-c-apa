@@ -38,6 +38,7 @@
 Makefile
 *.workspace
 *.d
+*.mk
 
 # Personal projects
 _*
