@@ -24,7 +24,7 @@ typedef struct {
     Koala *koala;
     int nKoala;
     Famiglia *famiglie;
-    int nFamiglie;    
+    int nFamiglie;
     int nAlberiTot;
     int maxPerAlbero;
 } Popolazione;
