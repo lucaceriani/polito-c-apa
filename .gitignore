@@ -39,6 +39,7 @@ Makefile
 *.workspace
 *.d
 *.mk
+Debug/
 
 # Personal projects
 _*

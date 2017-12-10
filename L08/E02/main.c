@@ -7,6 +7,7 @@
 int comb(int*, int, int, int*);
 int getCosto(int*, int*, int);
 int isBalanced(int, int*, int);
+void printArrows(int*, int);
 
 int main() {
         
@@ -31,6 +32,7 @@ int main() {
     for (i=0; i<n; i++) {
         fscanf( fp, "%d", &f[i]);
     }
+    fclose(fp);
     
     comb(f,n,0,sol);
 
@@ -46,9 +48,9 @@ int comb(int *f, int n, int pos, int *sol) {
     if (pos==n) {
         newCosto=getCosto(f,sol,n);
         if (newCosto<costoMin && isBalanced(0, sol, n)) {
-            costoMin=newCosto;
-            for (i=0; i<pos; i++) printf("%c", sol[i]==0?'>':'<');
-            printf("\nCosto: %d\n", costoMin);
+            costoMin=newCosto; // aggiorno il costo minimo
+            printArrows(sol, pos); // stampo questa soluzione
+            printf("Costo: %d\n", costoMin); // stampo il costo dello swap
         }
         return costoMin;
     }
@@ -57,10 +59,13 @@ int comb(int *f, int n, int pos, int *sol) {
     costoMin=comb(f,n,pos+1,sol);
     sol[pos]=1;
     costoMin=comb(f,n,pos+1,sol);
+    
     return costoMin;
 }
 
 int getCosto(int *f, int*sol, int n) {
+    // calcolo del costo della soluzione rispetto a f (vettore contente)
+    // le frecce lette da file
     int i, costoTot=0;
 
     for (i=0; i<n; i++) {
@@ -72,7 +77,8 @@ int getCosto(int *f, int*sol, int n) {
 
 int isBalanced(int l, int *sol, int n) {
     
-    // condizione di terminazione
+    // condizione di terminazione: se sono arrivato ad un vettore unitario
+    //                             oppure se ho sforato
     if (l>=n) return 1;
     
     int i=l;
@@ -84,7 +90,7 @@ int isBalanced(int l, int *sol, int n) {
     // c'è qualcosa che non va e quindi la sequenza non è bilanciata
     if (currArrow==1) return 0;
     
-    while (currArrow==sol[++i]) leftBalance++;
+    while (currArrow==sol[++i]) leftBalance++; // mi sposto alla prima freccia
     currArrow=sol[i]; // siamo sulla prima freccia nell'altra direzione
     while (currArrow==sol[++i]) rightBalance++;
     
@@ -92,4 +98,12 @@ int isBalanced(int l, int *sol, int n) {
     if (rightBalance!=leftBalance) return 0;
     
     return isBalanced(i, sol, n);
+}
+
+void printArrows(int* sol, int n) {
+    // stampa le frecce dentro sol
+    int i;
+    for (i=0; i<n; i++)
+        printf("%c", sol[i]==0?'>':'<');
+    printf("\n");
 }

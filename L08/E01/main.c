@@ -5,7 +5,7 @@
 #define FILE_FAMIGLIE "fam.txt"
 #define FILE_NEMICI "nem.txt"
 
-#define MAX_NEMICI 100
+#define MAX_NEMICI 100 // valore arbitrario per semplificare il codice
 
 typedef struct {
     int *koalaIndex;
@@ -31,103 +31,10 @@ typedef struct {
 
 FILE *apriFile(const char*, const char*);
 int alberoExists(int, Popolazione*, int);
-
-int areEnemies(int a, int b, Popolazione *p) {
-    // funzione che dati due Indici di koala a e b controlla se sono nemici
-    int i,famA, famB;
-    
-    famA=p->koala[a].famIndex;
-    famB=p->koala[b].famIndex;
-    
-    for (i=0; i<p->famiglie[famA].nKoalaIndex; i++) {
-        if (p->famiglie[famA].famNemicaIndex[i] == famB)
-            return 1;
-    }
-    return 0;
-}
-
-int isAllowedOnTree(int kIndex, int tIndex, Popolazione *p) {
-    int i,nAlberi, trovato=0;
-    nAlberi=p->koala[kIndex].nAlberi;
-    for (i=0; i<nAlberi; i++) {
-        if (p->koala[kIndex].alberi[i]==tIndex) trovato=1;
-    }
-    return trovato;
-}
-
-int isValid(int n, int *sol, int m, Popolazione *p, char modo) {
-    int i,j,k;
-    int totAlbero;
-    
-    int *solKoala=(int*)malloc(n*sizeof(int));
-    
-    // per ogni albero
-    for (i=0; i<m; i++) {
-        totAlbero=0;
-        // estrazione dei koala sull'i-esimo albero
-        for (j=0; j<n; j++) {
-            if (sol[j]==i) { // se fa parte del gruppo che sto considerando
-                solKoala[totAlbero++]=j;
-            }
-        }
-        
-        // controllo quantità di koala
-        if (totAlbero > p->maxPerAlbero) return 0;
-        
-        // controllo incopatibilità per famiglie
-        for (j=0; j<totAlbero; j++) { //j indice della solKoala
-            for (k=j; k<totAlbero; k++) {
-                if (areEnemies(solKoala[j],solKoala[k], p)) return 0;
-            }
-        }
-        
-        // il controllo su che alberi si vive dipende dal parametro modo
-        if (modo=='a') { // se voglio controllare tutti i vincoli...
-            for (j=0; j<totAlbero; j++) { //j indice della solKoala
-                if (!isAllowedOnTree(solKoala[j],i,p)) return 0;
-            }
-        }
-        
-        
-        
-    }
-    return 1;
-}
-
-// algoritmo di er
-int er(int n, int m, int pos, int *sol, Popolazione *p, char modo, int continua) {
-
-    if (!continua) {
-        return continua;
-    }
-    
-    int i,j;
-    
-    if (pos>=n) {
-        //count++;
-        if (isValid(n,sol,m,p,modo)) {
-            
-            printf("Divisione koala in %d alberi su %d: ", m, p->nAlberiTot);
-            for (i=0; i<m; i++) {
-                printf("\n\t{ ");
-                for (j=0; j<n; j++)
-                    if (sol[j]==i)
-                        printf("%d " ,j);
-                printf("} ");
-            }
-            //printf("\n%d operazioni.\n", count);
-            puts("");
-            continua=0;
-        }
-        return continua;
-    }
-    
-    for (i=0; i<m; i++) {
-        sol[pos]=i;
-        continua=er(n,m,pos+1,sol,p, modo, continua);
-    }
-    return continua; 
-}
+int areEnemies(int, int, Popolazione*);
+int isAllowedOnTree(int, int, Popolazione*);
+int isValid(int, int*, int, Popolazione*, char);
+int er(int, int, int, int*, Popolazione*, char, int);
 
 int main(int argc, char **argv){
     
@@ -225,7 +132,100 @@ int main(int argc, char **argv){
     return 0;
 }
 
+// algoritmo di er
+int er(int n, int m, int pos, int *sol, Popolazione *p, char modo, int continua) {
 
+    if (!continua) {
+        return continua;
+    }
+    
+    int i,j;
+    
+    if (pos>=n) {
+        //count++;
+        if (isValid(n,sol,m,p,modo)) {
+            
+            printf("Divisione koala in %d alberi su massimo %d: ",
+                   m, p->nAlberiTot);
+            for (i=0; i<m; i++) {
+                printf("\n\t{ ");
+                for (j=0; j<n; j++)
+                    if (sol[j]==i)
+                        printf("%d " ,j);
+                printf("} ");
+            }
+            //printf("\n%d operazioni.\n", count);
+            puts("");
+            continua=0;
+        }
+        return continua;
+    }
+    
+    for (i=0; i<m; i++) {
+        sol[pos]=i;
+        continua=er(n,m,pos+1,sol,p, modo, continua);
+    }
+    return continua; 
+}
+
+int areEnemies(int a, int b, Popolazione *p) {
+    // funzione che dati due Indici di koala a e b controlla se sono nemici
+    int i,famA, famB;
+    
+    famA=p->koala[a].famIndex;
+    famB=p->koala[b].famIndex;
+    
+    for (i=0; i<p->famiglie[famA].nKoalaIndex; i++) {
+        if (p->famiglie[famA].famNemicaIndex[i] == famB)
+            return 1;
+    }
+    return 0;
+}
+
+int isAllowedOnTree(int kIndex, int tIndex, Popolazione *p) {
+    int i,nAlberi, trovato=0;
+    nAlberi=p->koala[kIndex].nAlberi;
+    for (i=0; i<nAlberi; i++) {
+        if (p->koala[kIndex].alberi[i]==tIndex) trovato=1;
+    }
+    return trovato;
+}
+
+int isValid(int n, int *sol, int m, Popolazione *p, char modo) {
+    int i,j,k;
+    int totAlbero;
+    
+    int *solKoala=(int*)malloc(n*sizeof(int));
+    
+    // per ogni albero (gruppo)
+    for (i=0; i<m; i++) {
+        totAlbero=0;
+        // estrazione dei koala sull'i-esimo albero
+        for (j=0; j<n; j++) {
+            if (sol[j]==i) { // se fa parte del gruppo che sto considerando
+                solKoala[totAlbero++]=j;
+            }
+        }
+        
+        // controllo quantità di koala
+        if (totAlbero > p->maxPerAlbero) return 0;
+        
+        // controllo incopatibilità per famiglie
+        for (j=0; j<totAlbero; j++) { //j indice della solKoala
+            for (k=j; k<totAlbero; k++) {
+                if (areEnemies(solKoala[j],solKoala[k], p)) return 0;
+            }
+        }
+        
+        // il controllo su che alberi si vive dipende dal parametro modo
+        if (modo=='a') { // se voglio controllare tutti i vincoli...
+            for (j=0; j<totAlbero; j++) { //j indice della solKoala
+                if (!isAllowedOnTree(solKoala[j],i,p)) return 0;
+            }
+        }
+    }
+    return 1;
+}
 
 int alberoExists(int x, Popolazione *p, int n) {
     int i,j;
@@ -233,7 +233,7 @@ int alberoExists(int x, Popolazione *p, int n) {
     if (n==0) return 0;
     
     // controllo per ogni koala precente a quello che si sta considerando
-    // se esiste già l'lbero che si vorrebbe aggiungere al conteggio
+    // se esiste già l'albero che si vorrebbe aggiungere al conteggio
     for (j=0; j<=n-1; j++)
         for (i=0; i<p->koala[j].nAlberi; i++)
             if (p->koala[j].alberi[i]==x)
