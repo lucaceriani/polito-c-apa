@@ -210,7 +210,6 @@ int main() {
                     // se ho trovato un file con il codice dell'atleta...
                     while (fscanf(fEs, "%s %d %d",
                            tmpPiano.nomeEs, &tmpPiano.set, &tmpPiano.rep)==3) {
-                        // TODO: modificare con la funzione aggiungiEs
                         tmpPiano.es=linkEs(esercizi, tmpPiano.nomeEs);
                         addTail(tmpAtletaP->listaEs, &tmpPiano, "c");
                     }

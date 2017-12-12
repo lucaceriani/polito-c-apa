@@ -101,4 +101,6 @@
     <File Name="liste.c"/>
     <File Name="main.c"/>
   </VirtualDirectory>
+  <Dependencies Name="Debug"/>
+  <Dependencies Name="Release"/>
 </CodeLite_Project>
