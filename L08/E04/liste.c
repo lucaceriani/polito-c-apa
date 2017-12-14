@@ -37,6 +37,10 @@ link getVal(link x) {
     return x->val;
 }
 
+int isEmpty(Lista *l) {
+    return (getHead(l)==NULL)?1:0;
+}
+
 Lista *initList(size_t elSize) {
     Lista *l;
 

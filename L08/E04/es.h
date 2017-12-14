@@ -24,11 +24,14 @@ typedef struct {
 
 
 
-pianoEs_t *getPianoEsFromNode(link);
 esercizio_t *linkEs(tabellaEs*, char*);
-void stampaPianoEs(pianoEs_t*, FILE*);
-void modificaPianoEs(pianoEs_t*, int, int);
-void cancellaPianoEs(Lista*, link);
+void stampaTuttiEs(Lista*, FILE*);
+int modificaPianoEsByName(Lista*, char*, int, int);
+int cancellaPianoEsByName(Lista*, char*);
 int aggiungiEs(Lista*, tabellaEs*, char*, int, int);
+
+tabellaEs *newEsCollection();
+void caricaEsercizi(tabellaEs*, FILE*);
+void caricaPianoEsercizi(Lista*, tabellaEs*, FILE*);
 
 #endif

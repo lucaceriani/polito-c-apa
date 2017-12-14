@@ -8,28 +8,36 @@
 #define LUNG_CODICE 5
 
 typedef struct {
-    char nome[MAX_NOME+1];
-    char cognome[MAX_NOME+1];
-    char cognomenome[2*MAX_NOME+1];
-    char categoria[MAX_NOME+1];
-    char codice[LUNG_CODICE+1];
-    char data[11];
+    char *codice;
+    char *nome;
+    char *cognome;
+    char *categoria;
+    char *data;
+    char *cognomenome;
     int ore;
     Lista *listaEs;
-} Atleta;
+} Atleta; // TODO: adt 1 classe
 
 // funzioni di visualizzazione
+void stampaAtleta(Atleta*, FILE*);
 void stampaPerCategoria(Lista*);
 void stampaAnagrafica(Lista*, FILE*);
 
-Atleta *getAtletaFromNode(link x);
-Atleta *cercaAtleta(Lista*, char*);
 
-
-void stampaAtleta(Atleta*, FILE*);
+// funzioni get
+Lista *getListaEsercizi(Atleta*);
 int getNAtleti(Lista*);
-int delAtleta(Lista*, Atleta*);
+int getOreAtleta(Atleta*);
+char *getCodiceAtleta(Atleta*);
 
-int caricaAtleti(); // TODO
+// operazioni sugli atleti
+Atleta *newAtleta();
+Lista* newAtlCollection();
+Atleta *cercaAtleta(Lista*, char*);
+int cancellaAtleta(Lista*, Atleta*);
+int eserciziCaricatiAtl(Atleta*);
+void caricaAtleti(Lista*, FILE*);
+void aggiungiAtletaByPar(Lista*, char*, char*, char*, char*, char*, int);
+void modificaOreAtl(Atleta*, int);
 
 #endif

@@ -8,13 +8,45 @@
 #include "es.h"
 #include "liste.h"
 
+#define MAX_NOME 25
+#define LUNG_CODICE 5
 
-Atleta *getAtletaFromNode(link x) {
+static Atleta *getAtletaFromNode(link x) {
     return (Atleta*)(getVal(x));
 }
 
 int getNAtleti(Lista *l) {
     return getN(l);
+}
+
+int getOreAtleta(Atleta *a) {
+    return a->ore;
+}
+
+char* getCodiceAtleta(Atleta *a) {
+    return a->codice;
+}
+
+Lista *getListaEsercizi(Atleta *atl) {
+    return atl->listaEs;
+}
+
+static link cercaAtletaByAtlP(Lista *l, Atleta *atl) {
+    link x; 
+    for (x=getHead(l); x!=NULL; x=getNext(x)) {
+        if ((void*)atl==getVal(x)){
+            return x;
+        }
+    }
+    return NULL;
+}
+
+void modificaOreAtl(Atleta *a, int ore) {
+    a->ore=ore;
+}
+
+Atleta *newAtleta() {
+    return (Atleta*)malloc(sizeof(Atleta));
 }
 
 static int startsWith(const char *a, const char *b) {
@@ -31,15 +63,47 @@ static int startsWith(const char *a, const char *b) {
     return 0;
 }
 
-int delAtleta(Lista *l, Atleta *atl) {
-    link x; 
-    for (x=getHead(l); x!=NULL; x=getNext(x)) {
-        if ((void*)atl==getVal(x)){
-            delNode(l, x);
-            return 1;
-        }
-    }
-    return 0;
+static void strcatMia(char *dst, char *src1, char *src2) {
+    strcpy(dst, "");
+    strcpy(dst, src1);
+    strcat(dst, src2);
+}
+
+static void aggiungiAtleta(Lista *l, Atleta *atl) {
+    atl->cognomenome=(char*)malloc(strlen(atl->nome)+strlen(atl->cognome)+1);
+    strcatMia(atl->cognomenome, atl->cognome, atl->nome);
+    addTail(l, atl, "c");
+}
+
+void aggiungiAtletaByPar(Lista *l, char *codice, char *nome, char *cognome, 
+                         char *categoria, char *data, int ore) {
+    
+    Atleta a;
+    // non c'è bisogno di fare la copia in memoria delle cose perché
+    // ci pensa già aggiungiAtleta.
+    a.codice=strdup(codice);
+    a.nome=strdup(nome);
+    a.cognome=strdup(cognome);
+    a.categoria=strdup(categoria);
+    a.data=strdup(data);
+    a.ore=ore;
+    a.listaEs=initList(sizeof(pianoEs_t));
+    aggiungiAtleta(l, &a);
+    
+}
+
+int cancellaAtleta(Lista *l, Atleta *atl) {
+    link x=cercaAtletaByAtlP(l,atl);
+    
+    if (x==NULL) return 0;
+    // else
+    free(atl->codice);
+    free(atl->nome);
+    free(atl->cognome);
+    free(atl->cognomenome);
+    free(atl->categoria);
+    free(atl->data);
+    delNode(l, x); return 1;
 }
 
 void stampaPerCategoria(Lista *atleti) {
@@ -70,7 +134,6 @@ void stampaPerCategoria(Lista *atleti) {
                 printed[j]=1; // salvo il fatto che l'ho stampato
             }
         }
-        
     }
 }
 
@@ -115,20 +178,43 @@ Atleta *cercaAtleta(Lista *l, char *s) {
 }
 
 void stampaAtleta(Atleta *a, FILE *fp) {
-    link p;
     fprintf(fp, "%s %s %s %s %s %d\n", a->codice, a->nome, a->cognome,
         a->categoria, a->data, a->ore);
     
-    // controllo se ci sono degli esercizi caricati, in caso li stampo
-    p=getHead(a->listaEs);
-    if (p!=NULL) {
-        for (; p!=NULL; p=getNext(p))
-        stampaPianoEs(getPianoEsFromNode(p), stdout);
-    }
+    stampaTuttiEs(getListaEsercizi(a), fp);
 }
 
 void stampaAnagrafica(Lista *l, FILE *fp) {
     link h=getHead(l);
     fprintf(fp, "%d\n", getNAtleti(l));
     for (; h!=NULL; h=getNext(h)) stampaAtleta(getAtletaFromNode(h), fp);
+}
+
+int eserciziCaricatiAtl(Atleta *atl) {
+    return !isEmpty(getListaEsercizi(atl));
+}
+
+void caricaAtleti(Lista *l, FILE *fp) {
+    Atleta tmp;
+    int i=0,n;
+    
+    if (fscanf(fp, "%d\n", &n)!=1) exit(2); // controllo prima riga
+    
+    tmp.codice=malloc(LUNG_CODICE+1);
+    tmp.nome=malloc(MAX_NOME+1);
+    tmp.cognome=malloc(MAX_NOME+1);
+    tmp.categoria=malloc(MAX_NOME+1);
+    tmp.data=malloc(11);
+
+    while(i++<n && fscanf(fp, "%s %s %s %s %s %d\n", tmp.codice,
+        tmp.cognome, tmp.nome, tmp.categoria, tmp.data,
+        &tmp.ore)==6) {
+
+        aggiungiAtletaByPar(l, tmp.codice, tmp.nome, tmp.cognome, tmp.categoria,
+                            tmp.data, tmp.ore);
+    }
+}
+
+Lista *newAtlCollection() {
+    return initList(sizeof(Atleta));
 }
