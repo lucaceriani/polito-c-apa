@@ -11,27 +11,39 @@
 #define MAX_NOME 25
 #define LUNG_CODICE 5
 
-static Atleta *getAtletaFromNode(link x) {
-    return (Atleta*)(getVal(x));
+struct _Atleta {
+    char *codice;
+    char *nome;
+    char *cognome;
+    char *categoria;
+    char *data;
+    char *cognomenome;
+    int ore;
+    Lista listaEs;
+};
+
+
+static Atleta getAtletaFromNode(link x) {
+    return (Atleta)(getVal(x));
 }
 
-int getNAtleti(Lista *l) {
+int getNAtleti(Lista l) {
     return getN(l);
 }
 
-int getOreAtleta(Atleta *a) {
+int getOreAtleta(Atleta a) {
     return a->ore;
 }
 
-char* getCodiceAtleta(Atleta *a) {
+char* getCodiceAtleta(Atleta a) {
     return a->codice;
 }
 
-Lista *getListaEsercizi(Atleta *atl) {
+Lista getListaEsercizi(Atleta atl) {
     return atl->listaEs;
 }
 
-static link cercaAtletaByAtlP(Lista *l, Atleta *atl) {
+static link cercaAtletaByAtlP(Lista l, Atleta atl) {
     link x; 
     for (x=getHead(l); x!=NULL; x=getNext(x)) {
         if ((void*)atl==getVal(x)){
@@ -41,12 +53,12 @@ static link cercaAtletaByAtlP(Lista *l, Atleta *atl) {
     return NULL;
 }
 
-void modificaOreAtl(Atleta *a, int ore) {
+void modificaOreAtl(Atleta a, int ore) {
     a->ore=ore;
 }
 
-Atleta *newAtleta() {
-    return (Atleta*)malloc(sizeof(Atleta));
+Atleta newAtleta() {
+    return (Atleta)malloc(sizeof(struct _Atleta));
 }
 
 static int startsWith(const char *a, const char *b) {
@@ -69,30 +81,31 @@ static void strcatMia(char *dst, char *src1, char *src2) {
     strcat(dst, src2);
 }
 
-static void aggiungiAtleta(Lista *l, Atleta *atl) {
+static void aggiungiAtleta(Lista l, Atleta atl) {
     atl->cognomenome=(char*)malloc(strlen(atl->nome)+strlen(atl->cognome)+1);
     strcatMia(atl->cognomenome, atl->cognome, atl->nome);
+    
     addTail(l, atl, "c");
 }
 
-void aggiungiAtletaByPar(Lista *l, char *codice, char *nome, char *cognome, 
+void aggiungiAtletaByPar(Lista l, char *codice, char *nome, char *cognome, 
                          char *categoria, char *data, int ore) {
     
-    Atleta a;
-    // non c'è bisogno di fare la copia in memoria delle cose perché
-    // ci pensa già aggiungiAtleta.
-    a.codice=strdup(codice);
-    a.nome=strdup(nome);
-    a.cognome=strdup(cognome);
-    a.categoria=strdup(categoria);
-    a.data=strdup(data);
-    a.ore=ore;
-    a.listaEs=initList(sizeof(pianoEs_t));
-    aggiungiAtleta(l, &a);
+    Atleta a=newAtleta();
+
+    a->codice=strdup(codice);
+    a->nome=strdup(nome);
+    a->cognome=strdup(cognome);
+    a->categoria=strdup(categoria);
+    a->data=strdup(data);
+    a->ore=ore;
+    a->listaEs=newListaEs();
+    
+    aggiungiAtleta(l, a);
     
 }
 
-int cancellaAtleta(Lista *l, Atleta *atl) {
+int cancellaAtleta(Lista l, Atleta atl) {
     link x=cercaAtletaByAtlP(l,atl);
     
     if (x==NULL) return 0;
@@ -106,10 +119,10 @@ int cancellaAtleta(Lista *l, Atleta *atl) {
     delNode(l, x); return 1;
 }
 
-void stampaPerCategoria(Lista *atleti) {
+void stampaPerCategoria(Lista atleti) {
     int i=0,j=0;
     link p,q;
-    Atleta *tmpAtletaP, *tmpAtletaQ;
+    Atleta tmpAtletaP, tmpAtletaQ;
     int n=getNAtleti(atleti);
     int *printed=calloc(n, sizeof(int));
     // controllo in caso mi si chieda di scrivere una lista vuota
@@ -137,7 +150,7 @@ void stampaPerCategoria(Lista *atleti) {
     }
 }
 
-Atleta *cercaAtleta(Lista *l, char *s) {
+Atleta cercaAtleta(Lista l, char *s) {
     /* cerca atleta è una funzione intelligente che in base alle caratteristiche
      * della stringa passata come chiave cerca o nel codice o nel cogome
      * (anche parziale).
@@ -157,7 +170,7 @@ Atleta *cercaAtleta(Lista *l, char *s) {
     int (*fpComp)(const char*, const char*);
     char c;
     int d, isCodice=0;
-    Atleta *tmp;
+    Atleta tmp;
 
     if (strlen(s)==LUNG_CODICE && sscanf(s, "%c%d", &c,&d) && tolower(c)=='a') {
         // se è un codice
@@ -177,44 +190,48 @@ Atleta *cercaAtleta(Lista *l, char *s) {
     return NULL;
 }
 
-void stampaAtleta(Atleta *a, FILE *fp) {
+void stampaAtleta(Atleta a, FILE *fp) {
     fprintf(fp, "%s %s %s %s %s %d\n", a->codice, a->nome, a->cognome,
         a->categoria, a->data, a->ore);
     
     stampaTuttiEs(getListaEsercizi(a), fp);
 }
 
-void stampaAnagrafica(Lista *l, FILE *fp) {
+void stampaAnagrafica(Lista l, FILE *fp) {
     link h=getHead(l);
     fprintf(fp, "%d\n", getNAtleti(l));
     for (; h!=NULL; h=getNext(h)) stampaAtleta(getAtletaFromNode(h), fp);
 }
 
-int eserciziCaricatiAtl(Atleta *atl) {
+int eserciziCaricatiAtl(Atleta atl) {
     return !isEmpty(getListaEsercizi(atl));
 }
 
-void caricaAtleti(Lista *l, FILE *fp) {
-    Atleta tmp;
+void caricaAtleti(Lista l, FILE *fp) {
+    Atleta tmp=newAtleta();
     int i=0,n;
     
     if (fscanf(fp, "%d\n", &n)!=1) exit(2); // controllo prima riga
     
-    tmp.codice=malloc(LUNG_CODICE+1);
-    tmp.nome=malloc(MAX_NOME+1);
-    tmp.cognome=malloc(MAX_NOME+1);
-    tmp.categoria=malloc(MAX_NOME+1);
-    tmp.data=malloc(11);
+    tmp->codice=(char*)malloc(LUNG_CODICE+1);
+    tmp->nome=(char*)malloc(MAX_NOME+1);
+    tmp->cognome=(char*)malloc(MAX_NOME+1);
+    tmp->categoria=(char*)malloc(MAX_NOME+1);
+    tmp->data=(char*)malloc(11);
+    
+    
 
-    while(i++<n && fscanf(fp, "%s %s %s %s %s %d\n", tmp.codice,
-        tmp.cognome, tmp.nome, tmp.categoria, tmp.data,
-        &tmp.ore)==6) {
-
-        aggiungiAtletaByPar(l, tmp.codice, tmp.nome, tmp.cognome, tmp.categoria,
-                            tmp.data, tmp.ore);
+    while(i++<n && fscanf(fp, "%s %s %s %s %s %d\n", tmp->codice,
+        tmp->cognome, tmp->nome, tmp->categoria, tmp->data,
+        &tmp->ore)==6) {
+        
+        //aggiungiAtleta(l, &tmp);
+        
+        aggiungiAtletaByPar(l, tmp->codice, tmp->nome, tmp->cognome, tmp->categoria,
+                            tmp->data, tmp->ore);
     }
 }
 
-Lista *newAtlCollection() {
-    return initList(sizeof(Atleta));
+Lista newAtlCollection() {
+    return initList(sizeof(struct _Atleta));
 }

@@ -20,17 +20,16 @@
     #define F_CLEAR "clear"
 #endif
 
-Atleta *inputCercaAtleta(Lista*);
+Atleta inputCercaAtleta(Lista);
 void makeDotTxt(char*, char*);
 FILE *inputStampaSuFile();
 
 int main() {
 
     FILE *fp, *fEs;
-    Atleta *tmpAtletaP=newAtleta();
-    Lista *atleti;
-
-    tabellaEs *esercizi;
+    Atleta tmpAtl=newAtleta();
+    Lista atleti=newAtlCollection();
+    tabellaEs esercizi=newEsCollection();
 
 
     char uInput[100], fileTxt[10];
@@ -45,7 +44,6 @@ int main() {
         printf("Errore! Impossibile aprire il file \"%s\"!\n", FILE_ESERCIZI);
         exit(1);
     }
-    esercizi=newEsCollection();
     caricaEsercizi(esercizi, fp);
     fclose(fp);
     // -------------------------------------------------------------------------
@@ -55,10 +53,9 @@ int main() {
         printf("Errore! Impossibile aprire il file \"%s\"!\n", FILE_ATLETI);
         exit(1);
     }
-    atleti=newAtlCollection();
     caricaAtleti(atleti, fp);
     fclose(fp);
-
+   
     // menu'
     for(non_strutturato) {
         system(F_CLEAR);
@@ -69,12 +66,12 @@ int main() {
         puts("04. Ricerca atleta per codice o cognome parziale");
         puts("05. Aggiungi un atleta");
         puts("06. Cancella un atleta");
-        puts("---------------------------------------------------------------");
+        for (x=80; x-->0; printf("-")); puts(""); // linea orizzontale
         puts("07. Caricare / salvare esercizi di un atleta");
         puts("08. Modificare set / ripetizioni di un esercizio di un atleta");
         puts("09. Aggiungi un esercizio");
         puts("10. Cancella un esercizio");
-        puts("---------------------------------------------------------------");
+        for (x=80; x-->0; printf("-")); puts("");
         puts("0. Esci");
         puts("");
         printf("> ");
@@ -92,11 +89,11 @@ int main() {
             stampaPerCategoria(atleti);
             break;
         case 3: // aggiornamento monte ore settimanli
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
-            printf("Monte ore attuali: %d\n", getOreAtleta(tmpAtletaP));
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
+            printf("Monte ore attuali: %d\n", getOreAtleta(tmpAtl));
             printf("Nuovo monte ore: ");
             scanf("%d", &x);
-            modificaOreAtl(tmpAtletaP, x);
+            modificaOreAtl(tmpAtl, x);
             puts("Monte ore aggiornato correttamente!");
             break;
         case 4: // ricerca atleta
@@ -121,42 +118,42 @@ int main() {
 
             break;
         case 6: // cancellazione atleta
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
             printf("Rimuovere l'atleta trovato? [s/n] ");
             scanf("%s", uInput);
             if (tolower(uInput[0])=='s') {
-               cancellaAtleta(atleti, tmpAtletaP);
+               cancellaAtleta(atleti, tmpAtl);
                puts("Atleta cancellato con successo!");
             }
             break;
         case 7:
             // caricare / salvare esericizi per un atleta
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
 
-            if (eserciziCaricatiAtl(tmpAtletaP)) {
+            if (eserciziCaricatiAtl(tmpAtl)) {
                 // se gli esercizi sono già stati caricati
                 fp=inputStampaSuFile();
-                stampaTuttiEs(getListaEsercizi(tmpAtletaP), fp);
+                stampaTuttiEs(getListaEsercizi(tmpAtl), fp);
                 break;
             }
             //else: cerco di caricare il piano esercizi per l'altleta
-            makeDotTxt(fileTxt, getCodiceAtleta(tmpAtletaP));
+            makeDotTxt(fileTxt, getCodiceAtleta(tmpAtl));
             if ((fEs=fopen(fileTxt, "r"))!=NULL) {
                 // se ho trovato un file con il codice dell'atleta...
-                caricaPianoEsercizi(getListaEsercizi(tmpAtletaP), esercizi, fEs);
+                caricaPianoEsercizi(getListaEsercizi(tmpAtl), esercizi, fEs);
                 puts("Piano degli esercizi caricato correttamente");
                 fclose(fEs);
             } else {
                 printf("Non ho trovato un piano esercizi per %s\n",
-                       getCodiceAtleta(tmpAtletaP));
+                       getCodiceAtleta(tmpAtl));
             }
             break;
         case 8:
             // modificare il numero di set/ripetizioni
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
 
-            if (!eserciziCaricatiAtl(tmpAtletaP)){
-                printf("Esercizi non caricati per \"%s\"", tmpAtletaP->codice);
+            if (!eserciziCaricatiAtl(tmpAtl)){
+                printf("Esercizi non caricati per \"%s\"", getCodiceAtleta(tmpAtl));
                 break;
             }
             // se gli esercizi sono già stati caricati
@@ -165,7 +162,7 @@ int main() {
             printf("Nuovo n* set:         "); scanf("%d", &x);
             printf("Nuovo n* ripetizioni: "); scanf("%d", &y);
 
-            if(modificaPianoEsByName(getListaEsercizi(tmpAtletaP), uInput, x, y)){
+            if(modificaPianoEsByName(getListaEsercizi(tmpAtl), uInput, x, y)){
                 puts("Modifiche effettuate con successo!");
             } else {
                 puts("Errore! Esercizio non trovato.");
@@ -176,14 +173,14 @@ int main() {
             // ho bisogno sia dei set/ripetizioni da mettere nella lista, sia
             // dell'esercizio da far pountare quindi del nome, della
             // categoria e del tipo di esercizio
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
 
             printf("Nome dell'esercizio da aggiungere: ");
             scanf("%s", uInput);
             printf("Nuovo n* set:         "); scanf("%d", &x);
             printf("Nuovo n* ripetizioni: "); scanf("%d", &y);
             
-            if(aggiungiEs(getListaEsercizi(tmpAtletaP), esercizi, uInput, x, y)) {
+            if(aggiungiEs(getListaEsercizi(tmpAtl), esercizi, uInput, x, y)) {
                 puts("Esercizio aggiunto con successo!");
             } else {
                 printf("Impossibile trovare l'esercizio \"%s\"!\n", uInput);
@@ -191,10 +188,10 @@ int main() {
             break;
         case 10:
             // cancellazione di un esercizio
-            if ((tmpAtletaP=inputCercaAtleta(atleti))==NULL) break;
+            if ((tmpAtl=inputCercaAtleta(atleti))==NULL) break;
 
-            if (!eserciziCaricatiAtl(tmpAtletaP)){
-                printf("Esercizi non caricati per \"%s\"", tmpAtletaP->codice);
+            if (!eserciziCaricatiAtl(tmpAtl)){
+                printf("Esercizi non caricati per \"%s\"", getCodiceAtleta(tmpAtl));
                 break;
             }
             // se gli esercizi sono già stati caricati
@@ -202,7 +199,7 @@ int main() {
             scanf("%s", uInput);
             
             // scorro tutti gli elementi della lista con p=head della lista
-            if (cancellaPianoEsByName(getListaEsercizi(tmpAtletaP), uInput))
+            if (cancellaPianoEsByName(getListaEsercizi(tmpAtl), uInput))
                 puts("Esercizio cancellato con successo!");
             else
                 puts("Errore! Esercizio non trovato!");
@@ -217,9 +214,9 @@ int main() {
     return 0;
 }
 
-Atleta *inputCercaAtleta(Lista *l) {
+Atleta inputCercaAtleta(Lista l) {
     char c[MAX_NOME+1];
-    Atleta *atl;
+    Atleta atl;
     printf("Codice o cognome parziale dell'atleta: ");
     scanf("%s", c);
     if ((atl=cercaAtleta(l, c))!=NULL) {

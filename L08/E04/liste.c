@@ -1,3 +1,7 @@
+/*
+ * Versione 1.0
+ */ 
+
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
@@ -17,11 +21,11 @@ struct _Lista {
     link tail;
 };
 
-int getN(Lista *l) {
+int getN(Lista l) {
     return l->n;
 }
 
-link getHead(Lista *l) {
+link getHead(Lista l) {
     return l->head;
 }
 
@@ -37,15 +41,15 @@ link getVal(link x) {
     return x->val;
 }
 
-int isEmpty(Lista *l) {
+int isEmpty(Lista l) {
     return (getHead(l)==NULL)?1:0;
 }
 
-Lista *initList(size_t elSize) {
-    Lista *l;
+Lista initList(size_t elSize) {
+    Lista l;
 
     // alloco
-    l=(Lista*)malloc(sizeof(Lista));
+    l=(Lista)malloc(sizeof(struct _Lista));
 
     // set to zero
     l->n=0;
@@ -59,7 +63,7 @@ link newNode(void *val, size_t elSize, link prev, link next, char *mode) {
     link x = malloc(sizeof(node_t));
     if (x==NULL) return NULL; // controllo sul successo della malloc
     else {
-        // mode è la modalità concui si collega il valore di val
+        // mode è la modalità con cui si collega il valore di val
         // può essere "c" per copiare/duplicare il valore oppure
         // "p" per puntare dove punta val.
         if (tolower(mode[0])=='p') x->val=val;
@@ -77,7 +81,7 @@ link newNode(void *val, size_t elSize, link prev, link next, char *mode) {
     return x;
 }
 
-int addHead(Lista *l, void *val, char* mode) {
+int addHead(Lista l, void *val, char* mode) {
     link oldFirstItem;
     if (l->head==NULL) {
         // se la testa è vuota vuole dire che la lista è stata appena
@@ -93,7 +97,7 @@ int addHead(Lista *l, void *val, char* mode) {
     l->n++;
 }
 
-int addTail(Lista *l, void *val, char *mode) {
+int addTail(Lista l, void *val, char *mode) {
     link oldLastItem;
     if (l->head==NULL && l->tail==NULL) { // se la lista è vuota
         l->head=l->tail=newNode(val, l->elementSize, NULL, NULL, mode);
@@ -118,7 +122,7 @@ static int freeNode(link p) {
     return 0;
 }
 
-int delNode(Lista *l, link x) {
+int delNode(Lista l, link x) {
 
     if (l->head == l->tail) {
         // cancellazione di un elemento nella lista
