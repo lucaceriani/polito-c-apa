@@ -1,0 +1,7 @@
+Gaa 5 1 1
+Moo 4 1 1
+Zzz 7 0 0
+H 5 1 0
+Jjk 1 0 0
+Af 2 0 1
+Aez 3 0 0
