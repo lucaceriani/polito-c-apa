@@ -199,7 +199,10 @@ static void freeNode(link node) {
 
 void BSTfreeR(link node, link z) {
     // condizione di terminazione sono su una foglia
-    if (isLeaf(node,z)) freeNode(node);
+    if (isLeaf(node,z)){
+        freeNode(node);
+        return;
+    }
     
     // altrimenti ricorro
     if (hasLeftChild(node,z))
@@ -210,5 +213,5 @@ void BSTfreeR(link node, link z) {
 }
 
 void BSTfree(BST bst) {
-    
+    BSTfreeR(bst->root, bst->z);
 }

@@ -52,6 +52,7 @@ int main(int argc, char **argv) {
     }
     
     BSTwritePreorder(out,tree);
+    
     BSTfree(tree);
 
     return 0;
