@@ -51,10 +51,12 @@ static int exists(PQ pq, int i) {
     return  (i < pq->heapsize) && (i>=0);
 }
 
+/*
 static int isLeaf(PQ pq, int i) {
     if (!exists(pq,LEFT(i)) && !exists(pq,RIGHT(i))) return 1;
     return 0;
 }
+ */
 
 void PQdisplay(FILE* fp, PQ pq, const char *mode) {
     int i=0;    

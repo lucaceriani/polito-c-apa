@@ -18,13 +18,16 @@ void printMenu();
 void sfida(PQ);
 
 int main() {
-    
+        
     PQ pq=PQnew();
     FILE *fp;
     int scelta=-1, i;
     char nome[MAX_NOME+1];
     char f[100]; // percorso del file da salvare/aprire
     int punti;
+    
+    // random seed
+    srand((unsigned int)time(NULL));
     
     // menu'
     for (;;) {
@@ -37,7 +40,7 @@ int main() {
         case 0: // esci
             exit(0);
             break;
-        case 1: // TODO: sfida
+        case 1: // sfida
             sfida(pq);
             break;
         case 2: // visualizza classifica
