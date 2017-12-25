@@ -20,7 +20,7 @@ unsigned int cnt=0;
 
 float calcolaPunteggio(Elemento *e, int tot, int *sol, int n, int niceOutput) {
     // calcolo del punteggio tenendo conto di tutti i vincoli
-    int i,j;
+    int i;
     float punteggio=0;
     int categorie[3]={0};
     int *presi=calloc(tot, sizeof(int));
@@ -29,9 +29,9 @@ float calcolaPunteggio(Elemento *e, int tot, int *sol, int n, int niceOutput) {
     
     for (i=0; i<n; i++) { // per ogni elemento
         diff+=e[sol[i]].grado;
-        categorie[e[sol[i]].categoria]++; //aumento il contatore della cat corrisp
+        categorie[e[sol[i]].categoria]++; // contatore della cat corrisp
         
-        if (!presi[sol[i]]) {
+        if (!presi[sol[i]]) { // se non è mai stato preso lo prendo
             punteggio+=e[sol[i]].punti;
             presi[sol[i]]=1;
         }
@@ -47,16 +47,14 @@ float calcolaPunteggio(Elemento *e, int tot, int *sol, int n, int niceOutput) {
         categorie[e[sol[n-1]].categoria]--;
     }
     
-    // possibile bonus per categorie
-    // controllo composizione, controllo nCat
+    // possibile bonus di composizione
     for (i=0; i<3; i++) if (categorie[i]) nCat++;
-    if (nCat>1){
+    if (nCat>1){ // se sono state presentate più di una categoria -> bonus
         if (niceOutput) printf("Composizione: +2.50\n");
         punteggio+=2.5;
     }
     
-    free(presi);
-    
+    free(presi); // libero il vettore
     return punteggio;
 }
 
@@ -89,32 +87,22 @@ float calcolo(Elemento *e, int *sol, int *bestSol, int tot, int nSol,
     int i;
     float punti;
     
-    ++cnt;
-    
-    if (cnt%1000000==0) printf("%d milioni\n", cnt/1000000); // contatore
+    if (++cnt%1000000==0) printf("%d milioni\n", cnt/1000000); // contatore
     
     // condizione di teminazione
     if (nSol==MAX_ELEMENTI) {
-        
         punti=calcolaPunteggio(e, tot, sol, nSol, 0);
-        //printf("Punteggio: %.2f\n", punti);
-        //displaySol(sol, nSol);
-             
         if (punti>bestPunti) {
             aggiornaSol(bestSol, sol, nSol);
             bestPunti=punti;
-             
-            
-            return bestPunti;
         }
         return bestPunti;
     }
     
     for (i=start; i<tot; i++) {
-        // calcolo difficoltà se prendessi l'elemento
         
         // pruning 
-        if (diff+e[i].grado>maxDiff){
+        if (diff+e[i].grado>maxDiff){//difficoltà totale se prendessi l'elemento
             start++;
             continue;
         }
@@ -122,9 +110,9 @@ float calcolo(Elemento *e, int *sol, int *bestSol, int tot, int nSol,
             start++;
             continue;
         }
-        
-        sol[nSol]=i;
-        bestPunti=calcolo(e, sol, bestSol, tot, nSol+1, start, diff+e[i].grado, bestPunti, maxDiff, argv);
+        sol[nSol]=i; // prendo la soluzione corrente e ricorro su nSol+1
+        bestPunti=calcolo(e, sol, bestSol, tot, nSol+1, start, diff+e[i].grado,
+                          bestPunti, maxDiff, argv);
         
         start++;
     }
@@ -179,11 +167,13 @@ int main(int argc, char **argv) {
     // calcolo con ricorsione
     
     printf("Calcolo per %s %s %s %s\n", argv[1], argv[2], argv[3], argv[4]);
-        
     p=calcolo(e, sol, bestSol, tot, 0, 0, 0, 0, atoi(argv[4]), argv);
+    for(i=80; i-->0; printf("-"));
     printf("Punteggio: %.2f\n", p);
     displaySol(e, bestSol, MAX_ELEMENTI);
     calcolaPunteggio(e, tot, bestSol, MAX_ELEMENTI, 1);
+    for(i=80; i-->0; printf("-"));
+    puts("\n --- Done! ---");
     
     return 0;
 }
