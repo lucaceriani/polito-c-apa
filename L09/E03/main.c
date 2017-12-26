@@ -18,6 +18,8 @@ typedef struct {
 
 unsigned int cnt=0;
 
+
+
 float calcolaPunteggio(Elemento *e, int tot, int *sol, int n, int niceOutput) {
     // calcolo del punteggio tenendo conto di tutti i vincoli
     int i;
@@ -39,28 +41,28 @@ float calcolaPunteggio(Elemento *e, int tot, int *sol, int n, int niceOutput) {
     
     // controllo il bonus di uscita
     if (e[sol[n-1]].categoria!=NA && e[sol[n-1]].grado>=5){
-        if (niceOutput) printf("Uscita: +2.50\n");
+        if (niceOutput) printf("uscita: +2.50\n");
         punteggio+=2.5;
         // se l'ultimo elemento ha già partecipato al bonus di uscita non potrà
         // partecipare la bonus della composizione, quindi tolgo la sua
         // categoria dal contatore delle categorie
         categorie[e[sol[n-1]].categoria]--;
-    }
+    } else if (niceOutput) printf("uscita: +0.00\n");
     
     // possibile bonus di composizione
     for (i=0; i<3; i++) if (categorie[i]) nCat++;
     if (nCat>1){ // se sono state presentate più di una categoria -> bonus
-        if (niceOutput) printf("Composizione: +2.50\n");
+        if (niceOutput) printf("composizione: +2.50\n");
         punteggio+=2.5;
-    }
+    } else if (niceOutput) printf("composizione: +0.00\n");
     
     free(presi); // libero il vettore
     return punteggio;
 }
 
 int pruValid(Elemento e, char **argv) {
-    // controllo che l'elemento no sia troppo difficile per l'altleta
-    // dato che la categori è un enum e sono in ordine come i parametri posso
+    // controllo che l'elemento non sia troppo difficile per l'altleta
+    // dato che la categoria è un enum e sono in ordine come i parametri posso
     // scrivere così
     
     if (e.grado > atoi(argv[1+e.categoria])) return 0; // se è troppo difficile
@@ -71,7 +73,7 @@ int pruValid(Elemento e, char **argv) {
 void displaySol(Elemento* e, int *sol, int n) {
     int i;
     for (i=0; i<n; i++) {
-        printf("%s %d %+.2f\n", e[sol[i]].nome, e[sol[i]].grado, e[sol[i]].punti);
+        printf("%d - %s %d %+.2f\n", e[sol[i]].categoria, e[sol[i]].nome, e[sol[i]].grado, e[sol[i]].punti);
         
     }
 }
@@ -117,6 +119,65 @@ float calcolo(Elemento *e, int *sol, int *bestSol, int tot, int nSol,
         start++;
     }
     return bestPunti;
+}
+
+int calcDiff(Elemento *e, int *sol, int n) {
+    int i;
+    int currDiff=0;
+    for (i=0; i<n; i++) currDiff+=e[i].grado;
+    return currDiff;
+}
+
+void greedy(Elemento *e, int tot, int *sol, int n, char **argv) {
+    
+    int i,j;
+    int maxDiff=atoi(argv[4]);
+    int currDiff=0;
+    int *presi=calloc(tot, sizeof(int));
+    int bestPunti;
+    int leastGrade=0;
+    
+    // ricerca elemento con grado minimo
+    for (i=0; i<tot; i++) if (e[i].grado < e[leastGrade].grado) leastGrade=i;
+    // riempo tutto il vettore con elementi di grado minimo, controllo se sto
+    // dentro la difficoltà massima e poi procedo a cercare quelli di punteggio
+    // massimo compatibili
+    for (i=0; i<n; i++) sol[i]=leastGrade;
+    
+    currDiff=calcDiff(e, sol, n);
+    if (currDiff>maxDiff) return;
+    
+    for (i=0; i<n; i++) {
+        // ricerca dell'elemento con il punteggio massimo
+        bestPunti=-1;
+        for (j=0; j<tot; j++) {
+            if (pruValid(e[j], argv) && currDiff-e[i].grado+e[j].grado<=maxDiff && !presi[j]) {
+                if (bestPunti==-1)
+                    bestPunti=j;
+                else if (e[j].punti > e[bestPunti].punti)
+                    bestPunti=j;
+            }
+        }
+        if (bestPunti==-1 && i>0) {
+            bestPunti=i-1;
+        }
+        presi[bestPunti]=1;
+        sol[i]=bestPunti;
+        currDiff+=e[bestPunti].grado;
+    }
+    
+    // voglio mettere in fondo un elemento acrobatico presente nella soluzione
+    if (e[sol[n-1]].categoria!=NA) return; // ho già quello che mi serve
+    
+    for (i=0; i<n; i++) {
+        if (e[sol[i]].categoria!=NA) {
+            j=sol[n-1];
+            sol[n-1]=sol[i];
+            sol[i]=j;
+            return;
+        }
+    }
+    
 }
 
 
@@ -167,12 +228,22 @@ int main(int argc, char **argv) {
     // calcolo con ricorsione
     
     printf("Calcolo per %s %s %s %s\n", argv[1], argv[2], argv[3], argv[4]);
-    p=calcolo(e, sol, bestSol, tot, 0, 0, 0, 0, atoi(argv[4]), argv);
+    
+    puts("Soluzione ottima (calcolo combinatorio)...");
+    
+    calcolo(e, sol, bestSol, tot, 0, 0, 0, 0, atoi(argv[4]), argv);
     for(i=80; i-->0; printf("-"));
-    printf("Punteggio: %.2f\n", p);
     displaySol(e, bestSol, MAX_ELEMENTI);
-    calcolaPunteggio(e, tot, bestSol, MAX_ELEMENTI, 1);
+    p=calcolaPunteggio(e, tot, bestSol, MAX_ELEMENTI, 1);
+    printf("Punteggio: %.2f\n", p);
+    
+    puts("\n\nSoluzione greedy...");
+    greedy(e, tot, bestSol, MAX_ELEMENTI, argv);
     for(i=80; i-->0; printf("-"));
+    displaySol(e, bestSol, MAX_ELEMENTI);
+    p=calcolaPunteggio(e, tot, bestSol, MAX_ELEMENTI, 1);
+    printf("Punteggio: %.2f\n", p);
+    
     puts("\n --- Done! ---");
     
     return 0;
