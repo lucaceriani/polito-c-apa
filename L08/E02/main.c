@@ -3,16 +3,14 @@
 #include <limits.h>
 #include <string.h>
 
-#define FILE_FRECCE "frecce.txt"
-
+#define FILE_FRECCE "frecce2.txt"
 #define inf INT_MAX
 
 int comb(int*, int, int, int*, int*);
 int din(int*, int, int, int, int*, int*);
 int getCosto(int*, int*, int);
-int getCostoBanale(int*, int, int);
 int isBalanced(int, int*, int);
-
+void equalizza(int*, int, int);
 void printArrows(int*, int);
 
 int main() {
@@ -31,67 +29,78 @@ int main() {
     fscanf(fp, "%d", &n);
     printf("Ho trovato %d frecce...\n", n);
     
+    
     // lettura dell numereo delle frecce
     f=(int*)malloc(n*sizeof(int));
-    sol=(int*)malloc(n*sizeof(int));
-    bestSol=(int*)malloc(n*sizeof(int));
+    sol=(int*)calloc(n,sizeof(int));
+    bestSol=(int*)calloc(n,sizeof(int));
     
     // lettura delle frecce
     for (i=0; i<n; i++) {
         fscanf(fp, "%d", &f[i]);
     }
     fclose(fp);
-    
+    printArrows(f, n);
+    equalizza(sol, 0, n-1);
+    equalizza(bestSol, 0, n-1);
+
     puts("Metodo programmazione dinamica...");
-    
-    i=din(f,0,n-1,0,sol,bestSol);
-    printf("Costo: %d\n", i);
-    
+    din(f,0,n-1,0,sol,bestSol);
+    printArrows(bestSol, n);
+    //i=Gira(n,f);
+    printf("Costo: %d\n", getCosto(f, bestSol, n));
     for (i=80; i-->0; printf("-"));
-    /*
-    printf("Comincio metodo calcolo combinatorio con %d frecce\n", n );
+
+    equalizza(sol, 0, n-1);
+    equalizza(bestSol, 0, n-1);
+    
+    puts("Metodo calcolo combinatorio...");
     comb(f,n,0,sol,bestSol);
     printArrows(bestSol, n);
     printf("Costo: %d\n", getCosto(f, bestSol, n));
-    */
+    
     return 0;
 }
 
+void equalizza(int *sol, int l, int r) {
+    int i;
+    int mid=(l+r)/2;
+    for (i=l; i<=r; i++) {
+        if   (i<=mid) sol[i]=0;
+        else sol[i]=1;
+    }
+}
+
+void autoUpdateSolution(int *f, int* sol, int *bestSol, int n) {
+    if (getCosto(f, sol, n)<getCosto(f, bestSol, n) && isBalanced(0, sol, n)){
+        memcpy(bestSol, sol, n*sizeof(int)); // aggiona soluzione
+    }
+}
+
 int din(int *f, int l, int r, int pos, int *sol, int *bestSol) {
+    // r è l'indice dell'ultima casella, non il numero di elementi
     
-    int i, newMin;
-    int bestMin=INT_MAX;
+    int i;
+    int n=r+1;
     
     // condizione di terminazione
     if (l>=r) return 0;
-    
-    if ((r-l)==1) {
-        //printf("ciao\n");
-        return getCostoBanale(f, l, r);
+    // se ho solo una cella
+    if ((r-l)==1){
+        equalizza(sol, l, r);
+        autoUpdateSolution(f, sol, bestSol, n);
+        return 0;
     }
         
-    // in tutti gli altri casi ricorro
-    for (i=l+2; i<=r; i+=2) {
-        newMin=getCostoBanale(f, l, i-1)+din(f,i,r,0,sol,bestSol);
-        printf("l=%d, r=%d, newMin=%d, bestMin=%d\n", i, r, newMin, bestMin);
-        if (newMin<bestMin) bestMin=newMin;
+    // in tutti gli altri casi ricorro    
+    for (i=l; i<r+2; i+=2) {
+        equalizza(sol, l, i+1);
+        din(f,i+2,r,0,sol,bestSol);
+        autoUpdateSolution(f, sol, bestSol, n);
     }
-    return bestMin;
+    return getCosto(f, bestSol, n);
 }
 
-int getCostoBanale(int *f, int l, int r) {
-    // calcola il costo per portare le frecce nella configurazione
-    // ><   >><<    >>><<<      etc
-    if (l>=r) return 0;
-    
-    int i, cntr=0;
-    int m=(r+l)/2;
-    for (i=l; i<=r; i++) {
-        if      (i> m && f[i]!=1) cntr++;
-        else if (i<=m && f[i]!=0) cntr++;
-    }
-    return cntr;
-}
 
 int comb(int *f, int n, int pos, int *sol, int *bestSol) {
 
@@ -116,7 +125,7 @@ int comb(int *f, int n, int pos, int *sol, int *bestSol) {
     return costoMin;
 }
 
-int getCosto(int *f, int*sol, int n) {
+int getCosto(int *f, int *sol, int n) {
     // calcolo del costo della soluzione rispetto a f (vettore contente)
     // le frecce lette da file
     int i, costoTot=0;
@@ -136,16 +145,16 @@ int isBalanced(int l, int *sol, int n) {
     
     int i=l;
     int currArrow=sol[l];
-    int leftBalance=1;
-    int rightBalance=1;
+    int leftBalance=0;
+    int rightBalance=0;
        
     // se la prima freccia a sinistra punta verso destra vuol dire che 
     // c'è qualcosa che non va e quindi la sequenza non è bilanciata
     if (currArrow==1) return 0;
     
-    while (currArrow==sol[++i]) leftBalance++; // mi sposto alla prima freccia
+    while (currArrow==sol[++i] && i<n) leftBalance++; // mi sposto alla prima freccia
     currArrow=sol[i]; // siamo sulla prima freccia nell'altra direzione
-    while (currArrow==sol[++i]) rightBalance++;
+    while (currArrow==sol[++i] && i<n) rightBalance++;
     
     // controllo e ricorsione
     if (rightBalance!=leftBalance) return 0;
