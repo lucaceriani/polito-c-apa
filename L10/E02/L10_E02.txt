@@ -1,0 +1,1 @@
+./Debug/BST.c.o ./Debug/main.c.o ./Debug/Item.c.o   
